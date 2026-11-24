@@ -1,0 +1,24 @@
+2026-11-24T14:23:37.5735105+08:00 start os=10.0.26200.0 runtime=8.0.15 session=2 interactive=True mode=automatic
+2026-11-24T14:23:37.5841431+08:00 controlled four-edges-negative-origin pass=True
+2026-11-24T14:23:37.5842688+08:00 controlled half-open-edges pass=True
+2026-11-24T14:23:37.5859462+08:00 controlled local-dip-roundtrip dpi=96 dip=128 localPx=128 desktopPx=-1792 pass=True
+2026-11-24T14:23:37.5859730+08:00 controlled local-dip-roundtrip dpi=120 dip=128 localPx=160 desktopPx=-1760 pass=True
+2026-11-24T14:23:37.5859781+08:00 controlled local-dip-roundtrip dpi=144 dip=128 localPx=192 desktopPx=-1728 pass=True
+2026-11-24T14:23:37.5859814+08:00 controlled local-dip-roundtrip dpi=192 dip=128 localPx=256 desktopPx=-1664 pass=True
+2026-11-24T14:23:37.5868757+08:00 controlled start-first-zone pass=True
+2026-11-24T14:23:37.5869211+08:00 controlled short-edge-visit-cancels pass=True
+2026-11-24T14:23:37.5870061+08:00 controlled overlap-first-listed-zone pass=True
+2026-11-24T14:23:37.5870130+08:00 controlled interaction-area-defers-hide pass=True
+2026-11-24T14:23:37.5870419+08:00 controlled outside-delay-resets-on-return pass=True
+2026-11-24T14:23:37.5871432+08:00 controlled zone-switch-resets-enter-clock pass=True
+2026-11-24T14:23:37.5924014+08:00 monitor enumeration=True count=1
+2026-11-24T14:23:37.6015714+08:00 monitor device=\\.\DISPLAY1 interfaceFingerprint=01006B86EBCB primary=True boundsPx=[0,0,2560,1440) workPx=[0,0,2560,1440)
+2026-11-24T14:23:37.6067625+08:00 monitor device=\\.\DISPLAY1 pmv2=True monitorMatch=True dpi=96 widthDip=2560.00
+2026-11-24T14:23:37.6094936+08:00 hotkey register phase=first combination=Ctrl+Alt+Shift+F10 success=False win32=5
+2026-11-24T14:23:37.6118230+08:00 mouse native zone=1-top-a boundsPx=[640,0,1920,6) triggerMs=250 hideMs=400
+2026-11-24T14:23:37.6118497+08:00 mouse native zone=1-top-b boundsPx=[1280,0,2560,6) triggerMs=350 hideMs=400
+2026-11-24T14:23:37.6120923+08:00 mouse native initialPositionRead=True win32=0
+2026-11-24T14:24:08.1351984+08:00 mouse native pollMs=25 maxIntervalMs=251 reads=929 movingSamples=359 failures=0 transitions=0
+2026-11-24T14:24:08.1352682+08:00 hotkey native registeredForDelivery=False messageCount=0
+2026-11-24T14:24:08.1363244+08:00 performance polling wallMs=30012.2 cpuMs=46.9 cpuPctOneCore=0.156 logicalCpus=14 workingSetMiB=27.51 privateMiB=6.90
+processExitCode=1

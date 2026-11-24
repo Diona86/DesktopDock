@@ -1,0 +1,22 @@
+P0 desktop icon probe, Windows 11 build 26200, session 2.
+Probe input: prototypes/P0.Shell/Probe-DesktopIcons.ps1
+
+Run 1: workspace sandbox, exit code 0, Add-Type compilation succeeded.
+utc=2026-11-24T06:24:51.8686140+00:00 windows=10.0.26200.0 session=2 pwsh=7.6.9
+shell_hwnd=0x100FA shell_pid=25024 shell_class=Progman
+host=0x100FA host_class=Progman defview=0x200EE listview=0x200F0 visible=True
+enum_windows=True win32_error=0 candidate_count=1 shell_stable=True
+shell_setting_hide_icons=False
+shell_windows_stage=activate_shell_windows hresult=0x80070005 type=UnauthorizedAccessException detail=Retrieving the COM class factory for component with CLSID {9BA05972-F6A8-11CF-A442-00A0C90A8F39} failed due to the following error: 80070005 拒绝访问。 (0x80070005 (E_ACCESSDENIED)).
+
+Run 2: approved read-only sandbox bypass, exit code 0, Add-Type compilation succeeded.
+utc=2026-11-24T06:25:04.8708160+00:00 windows=10.0.26200.0 session=2 pwsh=7.6.9
+shell_hwnd=0x100FA shell_pid=25024 shell_class=Progman
+host=0x100FA host_class=Progman defview=0x200EE listview=0x200F0 visible=True
+enum_windows=True win32_error=0 candidate_count=1 shell_stable=True
+shell_setting_hide_icons=False
+shell_windows_desktop_hwnd=0x100FA dispatch_found=True
+folder_flags=0x40200224 desktop=True no_icons=False shell_stable=True
+
+Conclusion: desktop HWND hierarchy and read-only view flags observed successfully in this Windows build.
+Scope: all calls were read-only. Hide, restore, scope selection, Explorer restart and crash recovery were not exercised by these runs.

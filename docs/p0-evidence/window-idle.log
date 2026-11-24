@@ -1,0 +1,4 @@
+utc=2026-11-24T06:24:00.5883348+00:00 os=10.0.26200.0 runtime=8.0.15 session=2 architecture=X64
+station=WinSta0 threadDesktop=Default inputDesktop=Default inputDesktopError=0 foreground=0x50362
+idle shownBefore=True shownAfter=True elapsedMs=30009.56 cpuMs=578.12 processorCount=14 singleCorePercent=1.9265 normalizedPercent=0.1376 workingBeforeBytes=144543744 workingAfterBytes=153501696 privateBeforeBytes=84553728 privateAfterBytes=86003712
+PASS idle-baseline

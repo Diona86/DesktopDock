@@ -1,0 +1,25 @@
+utc=2026-11-24T06:25:16.3858564+00:00 os=10.0.26200.0 runtime=10.0.15 session=2 architecture=X64
+station=WinSta0 threadDesktop=Default inputDesktop=Default inputDesktopError=0 foreground=0x50362
+dock hwnd=0x10078E dpi=96 visible=True style=0x16080000 exStyle=0x00080008 renderEvents=1 showInTaskbar=False renderingTier=2
+PASS borderless-layered-render
+hit-test clear=0x1C053A panel=0x10078E backdrop=0x1C053A dock=0x10078E
+PASS transparent-vs-panel-native-hit-test
+screen pixels clear=0x00904818 panel=0x00603C7C expectedClearColorRef=0x00904818 expectedPanelRGB=(124,60,96)
+PASS alpha-composition
+focus iteration=1 before=0x50362 shown=0x50362 hidden=0x50362 dock=0x10078E activations=0 hiddenStyleVisible=False
+PASS focus-1
+focus iteration=2 before=0x50362 shown=0x50362 hidden=0x50362 dock=0x10078E activations=0 hiddenStyleVisible=False
+PASS focus-2
+focus iteration=3 before=0x50362 shown=0x50362 hidden=0x50362 dock=0x10078E activations=0 hiddenStyleVisible=False
+PASS focus-3
+window case=normal-framed hwnd=0x190A46 classification=normal zoomed=False style=0x16CF0000 styleError=0 cloakHResult=0x00000000 cloak=0 frameHResult=0x00000000 frame=(87,80)-(393,223) monitorValid=True monitor=(0,0)-(2560,1440) work=(0,0)-(2560,1440) dpiForWindow=96
+PASS classify-normal-framed
+window case=maximized-framed hwnd=0x190A46 classification=maximized zoomed=True style=0x17CF0000 styleError=0 cloakHResult=0x00000000 cloak=0 frameHResult=0x00000000 frame=(0,0)-(2560,1440) monitorValid=True monitor=(0,0)-(2560,1440) work=(0,0)-(2560,1440) dpiForWindow=96
+PASS classify-maximized-framed
+window case=borderless-work-area hwnd=0x260322 classification=borderless-candidate zoomed=False style=0x16080000 styleError=0 cloakHResult=0x00000000 cloak=0 frameHResult=0x00000000 frame=(0,0)-(2560,1440) monitorValid=True monitor=(0,0)-(2560,1440) work=(0,0)-(2560,1440) dpiForWindow=96
+UNVERIFIED classify-borderless-work-area work area does not differ from monitor bounds
+window case=borderless-inset-from-monitor hwnd=0x260322 classification=normal zoomed=False style=0x16080000 styleError=0 cloakHResult=0x00000000 cloak=0 frameHResult=0x00000000 frame=(0,0)-(2560,1392) monitorValid=True monitor=(0,0)-(2560,1440) work=(0,0)-(2560,1440) dpiForWindow=96
+PASS classify-borderless-inset-from-monitor
+window case=borderless-monitor hwnd=0x260322 classification=borderless-candidate zoomed=False style=0x16080000 styleError=0 cloakHResult=0x00000000 cloak=0 frameHResult=0x00000000 frame=(0,0)-(2560,1440) monitorValid=True monitor=(0,0)-(2560,1440) work=(0,0)-(2560,1440) dpiForWindow=96
+PASS classify-borderless-monitor
+window case=live-foreground-observation hwnd=0x50362 classification=normal zoomed=False style=0x14C70000 styleError=0 cloakHResult=0x00000000 cloak=0 frameHResult=0x00000000 frame=(358,261)-(2282,1411) monitorValid=True monitor=(0,0)-(2560,1440) work=(0,0)-(2560,1440) dpiForWindow=96

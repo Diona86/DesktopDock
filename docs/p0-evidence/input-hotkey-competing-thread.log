@@ -1,0 +1,28 @@
+2026-11-24T14:26:20.5130904+08:00 start os=10.0.26200.0 runtime=8.0.15 session=2 interactive=True mode=automatic
+2026-11-24T14:26:20.5227189+08:00 controlled four-edges-negative-origin pass=True
+2026-11-24T14:26:20.5228134+08:00 controlled half-open-edges pass=True
+2026-11-24T14:26:20.5241586+08:00 controlled local-dip-roundtrip dpi=96 dip=128 localPx=128 desktopPx=-1792 pass=True
+2026-11-24T14:26:20.5241813+08:00 controlled local-dip-roundtrip dpi=120 dip=128 localPx=160 desktopPx=-1760 pass=True
+2026-11-24T14:26:20.5241846+08:00 controlled local-dip-roundtrip dpi=144 dip=128 localPx=192 desktopPx=-1728 pass=True
+2026-11-24T14:26:20.5241859+08:00 controlled local-dip-roundtrip dpi=192 dip=128 localPx=256 desktopPx=-1664 pass=True
+2026-11-24T14:26:20.5246969+08:00 controlled start-first-zone pass=True
+2026-11-24T14:26:20.5247083+08:00 controlled short-edge-visit-cancels pass=True
+2026-11-24T14:26:20.5247536+08:00 controlled overlap-first-listed-zone pass=True
+2026-11-24T14:26:20.5247554+08:00 controlled interaction-area-defers-hide pass=True
+2026-11-24T14:26:20.5247689+08:00 controlled outside-delay-resets-on-return pass=True
+2026-11-24T14:26:20.5248992+08:00 controlled zone-switch-resets-enter-clock pass=True
+2026-11-24T14:26:20.5285376+08:00 monitor enumeration=True count=1
+2026-11-24T14:26:20.5369819+08:00 monitor device=\\.\DISPLAY1 interfaceFingerprint=01006B86EBCB primary=True boundsPx=[0,0,2560,1440) workPx=[0,0,2560,1440)
+2026-11-24T14:26:20.5428470+08:00 monitor device=\\.\DISPLAY1 pmv2=True monitorMatch=True dpi=96 widthDip=2560.00
+2026-11-24T14:26:20.5457218+08:00 hotkey register phase=first ownerThread=1 combination=Ctrl+Alt+Shift+F10 success=True win32=0
+2026-11-24T14:26:20.5478149+08:00 hotkey duplicate ownerThread=4 success=False win32=1409 conflictVerified=True
+2026-11-24T14:26:20.5496592+08:00 hotkey unregister phase=first success=True win32=0
+2026-11-24T14:26:20.5497331+08:00 hotkey register phase=after-release ownerThread=1 combination=Ctrl+Alt+Shift+F10 success=True win32=0
+2026-11-24T14:26:20.5497501+08:00 hotkey unregister phase=after-release success=True win32=0
+2026-11-24T14:26:20.5514293+08:00 mouse native zone=1-top-a boundsPx=[640,0,1920,6) triggerMs=250 hideMs=400
+2026-11-24T14:26:20.5514855+08:00 mouse native zone=1-top-b boundsPx=[1280,0,2560,6) triggerMs=350 hideMs=400
+2026-11-24T14:26:20.5518399+08:00 mouse native initialPositionRead=True win32=0
+2026-11-24T14:26:51.0853506+08:00 mouse native pollMs=25 maxIntervalMs=57 reads=952 movingSamples=282 failures=0 transitions=0
+2026-11-24T14:26:51.0853955+08:00 hotkey native registeredForDelivery=False messageCount=0
+2026-11-24T14:26:51.0948887+08:00 performance polling wallMs=30021.9 cpuMs=62.5 cpuPctOneCore=0.208 logicalCpus=14 workingSetMiB=28.43 privateMiB=7.74
+processExitCode=0

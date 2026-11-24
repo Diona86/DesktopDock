@@ -1,0 +1,66 @@
+Desktop Dock P0 environment observations, 2026-11-24 (UTC+08:00)
+Workspace: D:\myapp\desk-design
+
+Initial Get-ChildItem -Force:
+CODEX_MASTER_PROMPT.md  13300 bytes
+PRD.md                  17722 bytes
+README.md                 668 bytes
+TECHNICAL_DESIGN.md     13885 bytes
+
+git --version: git version 2.55.0.windows.3
+git status --short --branch: fatal: not a git repository (or any of the parent directories): .git
+git log -4 --oneline: fatal: not a git repository (or any of the parent directories): .git
+
+Baseline SHA-256:
+CODEX_MASTER_PROMPT.md  A1EEDB9D96318AA715AEDAC74DF80CD8E7CE3DBCA463B967922E115B04199170
+PRD.md                  CFB84668B1DD9A12522963BD92D10238794159DD722EB33CF7C3EBBDB0A591B0
+README.md               54E81496146503B14136336730244B8181D1C6E9B55F9BDF061AB32F5A32DBF8
+TECHNICAL_DESIGN.md     C1E7399B173A74004FDF2BA20B135AF42E624AF98F0D9AEBC7161ADE2BD76733
+The root PRD, technical design, and README matched the copies in the downloaded directory. The named master prompt was present in the workspace only.
+
+OS registry: DisplayVersion 25H2, CurrentBuild 26200, UBR 9974, EditionID CoreCountrySpecific
+Architecture: win-x64 host; processor Intel Core Ultra 7 155U; 14 logical processors available to the process
+PowerShell: 7.6.9; process session ID 2; Environment.UserInteractive=True
+Get-CimInstance: CIM resources could not be accessed from the client; total installed RAM not established by this command.
+
+dotnet --list-sdks:
+6.0.407 [C:\Program Files\dotnet\sdk]
+9.0.203 [C:\Program Files\dotnet\sdk]
+Local Microsoft.WindowsDesktop.App runtime versions: 6.0.15, 6.0.36, 8.0.8, 8.0.15, 9.0.4
+Local Microsoft.WindowsDesktop.App.Ref versions: 6.0.15, 6.0.36, 8.0.15, 9.0.4
+x86 dotnet location was registered, but its SDK directory was not found in the local directory check.
+
+vswhere reported Visual Studio Professional 2022 and Community 2022, both 17.13.35931.197.
+Both matched Microsoft.VisualStudio.Workload.ManagedDesktop and had amd64 MSBuild.exe.
+dotnet msbuild -version: 17.13.20.16214
+IDE UI not launched. CLI MSBuild and WPF template were exercised.
+
+Initial dotnet --info: Windows workload inspection hit Service Control Manager access denied (Win32 5).
+Initial dotnet new list wpf: UnauthorizedAccessException for the default user .templateengine directory.
+With process-local DOTNET_CLI_HOME and --debug:custom-hive, dotnet new list wpf returned the WPF app, user control library, class library, and custom control library templates. Workload verification still reported a warning.
+
+WPF smoke, Release, net8.0-windows, SDK 9.0.203:
+Default sandbox build failed MSB4184 on ToolLocationHelper.GetPlatformSDKDisplayName(Windows, 7.0), requested registry access is not allowed.
+Using the moniker explicitly removed that failure. A project built under the sandbox temp path containing #!sandbox then hit MSB3030 while WinFX copied NuGet intermediate files.
+Using a uniquely named normal workspace subdirectory for the generated template and intermediate files:
+dotnet build <template directory> --configuration Release -p:NuGetAudit=false --ignore-failed-sources '-p:TargetPlatformMoniker=Windows%2CVersion=7.0' --disable-build-servers
+Result: restore succeeded, TemplateSmoke.dll generated, 0 warnings, 0 errors, MSBuild elapsed 00:00:06.15.
+The generated smoke template and its build output were removed from that dedicated subdirectory after the run.
+
+Official SDK release metadata request:
+Default sandbox Invoke-RestMethod could not connect to the configured local proxy (access denied for the socket).
+The approved read-only retry returned latest-sdk 10.0.404, latest-runtime 10.0.15, support-phase active.
+
+Portable .NET 10 toolchain, approved isolated temp run:
+The win-x64 SDK ZIP was downloaded from builds.dotnet.microsoft.com, with SHA-512 equal to the official release manifest:
+330DDD2665B43CD2E428216A0D8EA1AC7BB19B5434FDC530E62010DC3B52823A620BF95489D628E1ED6F5122401793EE4887CCA4A019122361A1231497F632EE
+The portable CLI reported SDK 10.0.404 and Microsoft.WindowsDesktop.App 10.0.15. No system installation was used.
+dotnet new wpf -n TemplateSmoke -f net10.0 -o <temp project> --no-restore --debug:custom-hive <temp hive>
+dotnet build <temp project> --configuration Release -p:NuGetAudit=false --ignore-failed-sources --disable-build-servers
+Result: restore succeeded, net10.0-windows TemplateSmoke.dll generated, 0 warnings, 0 errors, MSBuild elapsed 00:00:10.16.
+The WPF prototype source was copied to the isolated temp directory and only the copied TargetFramework was set to net10.0-windows. Source hashes for Program.cs, Native.cs and app.manifest matched the workspace before execution.
+P0.Window Release net10.0-windows build: 0 warnings, 0 errors, MSBuild elapsed 00:00:03.38.
+The apphost ran with a process-local DOTNET_ROOT_X64 pointing to the portable SDK. Both --probe and --idle exited 0. See window-net10.log and window-net10-idle.log for actual runtime and per-case output.
+The dedicated portable-SDK temp directory and generated prototype bin/obj directories were removed after evidence capture.
+
+Isolated Windows Shell test environment: WindowsSandbox.exe, VMConnect.exe, Get-VM, VBoxManage.exe and vmrun.exe were not found as commands. The default VirtualBox and VMware Workstation CLI paths were absent. No isolated Windows session was available for Explorer restart in this run.

@@ -1,0 +1,12 @@
+dotnet build .\prototypes\P0.Window\P0.Window.csproj -c Release --disable-build-servers -p:TargetPlatformMoniker=Windows%2CVersion=7.0 -p:NuGetAudit=false --ignore-failed-sources
+验证工作负载时遇到问题。有关详细信息，请运行 "dotnet workload update"。
+  正在确定要还原的项目…
+  已还原 D:\myapp\desk-design\prototypes\P0.Window\P0.Window.csproj (用时 90 毫秒)。
+  P0.Window -> D:\myapp\desk-design\prototypes\P0.Window\bin\Release\net8.0-windows\P0.Window.dll
+
+已成功生成。
+    0 个警告
+    0 个错误
+
+已用时间 00:00:04.76
+exitCode=0
