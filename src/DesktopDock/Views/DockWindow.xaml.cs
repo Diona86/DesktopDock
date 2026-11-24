@@ -130,7 +130,7 @@ public partial class DockWindow : Window
         DockOptions options = session.Options;
         DockWindowPosition.WorkArea work = GetDockWorkArea();
         layoutScale = work.Scale;
-        DockLayoutOptions layout = options.Layout;
+        DockLayoutOptions layout = ThemedLayout();
         bool edgeVertical = options.Placement == DockPlacement.Left || options.Placement == DockPlacement.Right ||
             (options.Placement == DockPlacement.Floating && options.FloatingVertical);
         vertical = layout.Mode switch
@@ -145,17 +145,22 @@ public partial class DockWindow : Window
         int iconCount = entries.Length;
         layoutTracks = layout.Mode is DockLayoutMode.MultiColumnGrid or DockLayoutMode.MultiRowGrid
             ? Math.Min(layout.GridTracks, Math.Max(1, Math.Min(iconCount, layout.MaxVisibleIcons == 0 ? iconCount : layout.MaxVisibleIcons))) : 1;
-        double cross = vertical ? work.Width : work.Height;
-        double main = vertical ? work.Height : work.Width;
-        double preferredThickness = layoutTracks == 1 ? options.DockThickness
-            : Math.Max(options.DockThickness, layoutTracks * (options.IconSize + 8 + layout.IconSpacing) + 12);
+        double cross = (vertical ? work.Width : work.Height) - ThemeShadowInset * 2;
+        double main = (vertical ? work.Height : work.Width) - ThemeShadowInset * 2;
+        double iconSize = ThemedIconSize;
+        double border = Surface.BorderThickness.Left;
+        double themePadding = ThemeTokens?.Padding ?? -1;
+        double themedChrome = 2 * ((themePadding >= 0 ? themePadding : 5) + border);
+        double preferredThickness = layoutTracks == 1 && (ThemeTokens?.IconSize ?? 0) == 0 && themePadding < 0
+            ? options.DockThickness
+            : Math.Max(options.DockThickness, layoutTracks * (iconSize + 8 + (layoutTracks == 1 ? 0 : layout.IconSpacing)) + themedChrome);
         double thickness = Math.Min(preferredThickness, Math.Max(1, cross - EdgeGap * 2));
-        double padding = Math.Clamp((thickness - options.IconSize - 4) / 2, 0, 5);
+        double padding = themePadding < 0 ? Math.Clamp((thickness - iconSize - 4) / 2, 0, 5) : themePadding;
         double crossSpacing = layoutTracks > 1 ? layout.IconSpacing : 0;
-        double side = Math.Min(options.IconSize + 8, Math.Max(1, (thickness - (padding + 1) * 2) / layoutTracks - crossSpacing));
-        double icon = Math.Min(options.IconSize, Math.Max(1, side - 2));
+        double side = Math.Min(iconSize + 8, Math.Max(1, (thickness - (padding + border) * 2) / layoutTracks - crossSpacing));
+        double icon = Math.Min(iconSize, Math.Max(1, side - 2));
         double emptyItemLength = vertical ? Math.Max(34, side) : 92;
-        double chrome = (padding + 1) * 2 + GripLength;
+        double chrome = (padding + border) * 2 + GripLength;
         int mainCells = (int)Math.Ceiling(Math.Max(1, iconCount) / (double)layoutTracks);
         double cell = side + layout.IconSpacing;
         double desired = chrome + (iconCount == 0 ? emptyItemLength : mainCells * cell);
@@ -176,7 +181,10 @@ public partial class DockWindow : Window
         MoveHandle.Width = vertical ? 24 : 20;
         MoveHandle.Height = vertical ? 20 : 24;
         MoveHandle.Visibility = Visibility.Hidden;
-        GripDots.Orientation = vertical ? Orientation.Horizontal : Orientation.Vertical;
+        if (themeVisuals != null)
+            ApplyGripDesign();
+        else
+            GripDots.Orientation = vertical ? Orientation.Horizontal : Orientation.Vertical;
         ItemStrip.Rows = vertical ? mainCells : layoutTracks;
         ItemStrip.Columns = vertical ? layoutTracks : mainCells;
         ItemStrip.HorizontalAlignment = vertical ? HorizontalAlignment.Center : HorizontalAlignment.Left;
@@ -211,11 +219,12 @@ public partial class DockWindow : Window
             AutomationProperties.SetAutomationId(add, "DockAddItem");
             AutomationProperties.SetName(add, "添加项目");
             add.Click += (_, _) => showSettings();
+            ApplyEntryTooltip(add);
             ItemStrip.Children.Add(add);
             return;
         }
 
-        double gap = session.Options.Layout.IconSpacing / 2;
+        double gap = ThemedIconSpacing / 2;
         foreach (DockEntry entry in entries)
         {
             Button button = CreateEntryButton(entry.Id, icon, side, scale, iconLoads.Token);

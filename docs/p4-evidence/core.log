@@ -1,0 +1,46 @@
+PASS 1: existing profile can open without creating theme configuration
+PASS 2: all docks inherit legacy-compatible minimal initially
+PASS 3: all stable built-in ids
+PASS 4: three distinct materials
+PASS 5: three distinct grips
+PASS 6: three distinct hover interactions
+PASS 7: baseline sizes and motion remain compatible
+PASS 8: drafts remain isolated from store and disk
+PASS 9: per-property patch merges with inherited selected theme
+PASS 10: explicit local theme does not change another dock
+PASS 11: global selection preserves explicit local theme and sparse override
+PASS 12: reset reestablishes inheritance and removes empty override
+PASS 13: diff stores only changed parameters, including explicit zero
+PASS 14: reject invalid dock id
+PASS 15: validate effective overrides
+PASS 16: reject missing theme selection
+PASS 17: cannot overwrite built-in
+PASS 18: explicit Save atomically stores state and broadcasts change
+PASS 19: restart restores complete custom theme
+PASS 20: restart restores global runtime switches
+PASS 21: restart restores independent override and selection
+PASS 22: adding a duplicate theme cannot overwrite it
+PASS 23: blocked atomic write fails without replacing state
+PASS 24: failed write preserves original config and removes only its transient file
+PASS 25: theme including pattern resources round trips
+PASS 26: unsupported version
+PASS 27: new-version packages report the incompatible version even with new fields
+PASS 28: different package format
+PASS 29: out-of-range opacity
+PASS 30: numeric enums
+PASS 31: path-like identifiers
+PASS 32: path-containing resource fields
+PASS 33: binary and script resources
+PASS 34: URI in a color field
+PASS 35: missing required tokens
+PASS 36: null theme tokens
+PASS 37: duplicate JSON keys
+PASS 38: package size cap
+PASS 39: non-theme extension rejected
+PASS 40: export cannot overwrite themes.json
+PASS 41: invalid export cannot replace its destination
+PASS 42: all rejected packages leave stored and exported themes unchanged
+PASS 43: invalid store falls back to legacy-compatible default
+PASS 44: implicit save cannot replace damaged config
+PASS 45: invalid store bytes survive recovery
+END passed=45 failed=0

@@ -40,6 +40,8 @@ public partial class DockWindow
                 _ => PlacementMode.Top
             }
         };
+        ApplyEntryTooltip(button);
+        ApplyHoverMotion(button, image);
         AutomationProperties.SetAutomationId(button, group == null ? $"DockItem_{id:N}" : $"DockGroup_{id:N}");
         AutomationProperties.SetName(button, name);
         ToolTipService.SetInitialShowDelay(button, 400);

@@ -1,0 +1,38 @@
+2026-11-24T09:09:27.043+00:00 START exe=D:\myapp\desk-design\artifacts\DesktopDock-P4-win-x64\DesktopDock.exe directory=D:\myapp\desk-design\artifacts\p4-final-p3-grid-002537ccfaee43a48e9951909782728b
+2026-11-24T09:09:28.572+00:00 PASS P3 grid tool is advertised over MCP
+2026-11-24T09:09:28.827+00:00 PASS existing P3 profile opens with its original layout, order, and bytes
+2026-11-24T09:09:28.828+00:00 PASS settings button is absent from Dock chrome
+2026-11-24T09:09:28.829+00:00 PASS Dock exposes eight WPF edge and corner resize handles
+2026-11-24T09:09:29.360+00:00 PASS settings window remains available
+2026-11-24T09:09:29.496+00:00 PASS 3.2 by 3 snaps to 3 by 3 and preserves three items and six blank cells
+2026-11-24T09:09:29.499+00:00 PASS first grid edit migrates schema 3 to 4 with a byte-exact backup
+2026-11-24T09:09:29.501+00:00 PASS every root tile exposes a WPF resize handle
+2026-11-24T09:09:29.568+00:00 PASS exact half rounds up on both axes
+2026-11-24T09:09:29.596+00:00 PASS clean shrink leaves occupied cells intact
+2026-11-24T09:09:29.643+00:00 PASS item moves to blank row 3 column 1
+2026-11-24T09:09:29.680+00:00 PASS item moves from row 3 column 1 to adjacent blank row 3 column 2 without compacting other tiles
+2026-11-24T09:09:29.717+00:00 PASS tile handle snaps to a horizontal 2 by 1 span, with real WPF geometry {'x': 1270, 'y': 1377, 'width': 94, 'height': 46}
+2026-11-24T09:09:29.748+00:00 PASS moving a stretched tile preserves its span
+2026-11-24T09:09:29.787+00:00 PASS tile handle snaps to a vertical 1 by 2 span, with real WPF geometry {'x': 1270, 'y': 1329, 'width': 46, 'height': 94}
+2026-11-24T09:09:29.825+00:00 PASS both grid axes can be stretched together {'x': 1270, 'y': 1329, 'width': 94, 'height': 94}
+2026-11-24T09:09:29.867+00:00 PASS blank cell accepts a second reference
+2026-11-24T09:09:29.876+00:00 PASS a stretched tile cannot move to a blank anchor when its footprint hits another tile
+2026-11-24T09:09:29.949+00:00 PASS stretching beyond the window grows the grid to fit the valid footprint
+2026-11-24T09:09:30.028+00:00 PASS shrinking cannot clip an occupied cell or truncate a tile span
+2026-11-24T09:09:30.056+00:00 PASS real WPF PNG of sparse grid and stretched tile bytes=6005
+2026-11-24T09:09:30.129+00:00 PASS AutoHide configuration begins with the HWND hidden
+2026-11-24T09:09:30.166+00:00 PASS Top zone opens near the completed-dwell pointer without rewriting placement pointer=(640, 3) bounds={'x': 549, 'y': 13, 'width': 182, 'height': 156}
+2026-11-24T09:09:30.173+00:00 PASS Top reveal stays fixed while visible
+2026-11-24T09:09:30.203+00:00 PASS Bottom zone opens near the completed-dwell pointer without rewriting placement pointer=(640, 1435) bounds={'x': 549, 'y': 1269, 'width': 182, 'height': 156}
+2026-11-24T09:09:30.212+00:00 PASS Bottom reveal stays fixed while visible
+2026-11-24T09:09:30.255+00:00 PASS Left zone opens near the completed-dwell pointer without rewriting placement pointer=(3, 360) bounds={'x': 13, 'y': 282, 'width': 182, 'height': 156}
+2026-11-24T09:09:30.262+00:00 PASS Left reveal stays fixed while visible
+2026-11-24T09:09:30.310+00:00 PASS Right zone opens near the completed-dwell pointer without rewriting placement pointer=(2555, 360) bounds={'x': 2363, 'y': 282, 'width': 182, 'height': 156}
+2026-11-24T09:09:30.314+00:00 PASS Right reveal stays fixed while visible
+2026-11-24T09:09:30.362+00:00 PASS edge-follow reveal clamps to the work area near a corner pointer=(26, 3) bounds={'x': 0, 'y': 13, 'width': 182, 'height': 156}
+2026-11-24T09:09:30.394+00:00 PASS manual shortcut restores the configured centered bottom placement {'x': 1189, 'y': 1274, 'width': 182, 'height': 156}
+2026-11-24T09:09:30.511+00:00 PASS floating Dock retains its saved location through a hot-zone reveal pointer=(1791, 3) bounds={'x': 170, 'y': 170, 'width': 182, 'height': 156}
+2026-11-24T09:09:32.079+00:00 PASS restart restores exact cell holes, tile spans, and original references
+2026-11-24T09:09:32.155+00:00 PASS center-drop grouping still uses the group target cell in the sparse grid
+2026-11-24T09:09:32.226+00:00 PASS group promotion preserves other sparse placements and restores both references
+2026-11-24T09:09:32.387+00:00 END passed=36 failed=0

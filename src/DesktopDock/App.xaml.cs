@@ -12,6 +12,7 @@ public partial class App : Application
     private Forms.ToolStripMenuItem? visibilityMenu;
     private Forms.ToolStripMenuItem? pauseZonesMenu;
     private DockInteractionRuntime? interaction;
+    private bool dockVisibilityRequested;
     private bool exiting;
     private bool validationMode;
 
@@ -27,6 +28,7 @@ public partial class App : Application
             session = DockSession.Open(directory);
             dock = new DockWindow(session, new DockIconService(), ShowSettings, EditItem, ReplaceIcon, () => SetDockVisible(false));
             MainWindow = dock;
+            InitializeThemes(directory);
             dock.Closing += (_, args) =>
             {
                 if (exiting)
@@ -55,6 +57,7 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        DetachThemes();
         interaction?.Dispose();
         if (tray != null)
         {
@@ -96,8 +99,9 @@ public partial class App : Application
     {
         var menu = new Forms.ContextMenuStrip();
         menu.Items.Add("设置", null, (_, _) => ShowSettings());
+        menu.Items.Add("主题编辑器…", null, (_, _) => ShowThemeEditor());
         visibilityMenu = new Forms.ToolStripMenuItem();
-        visibilityMenu.Click += (_, _) => SetDockVisible(dock?.IsVisible != true);
+        visibilityMenu.Click += (_, _) => SetDockVisible(!dockVisibilityRequested);
         menu.Items.Add(visibilityMenu);
         pauseZonesMenu = new Forms.ToolStripMenuItem("暂停热区");
         pauseZonesMenu.Click += (_, _) =>
@@ -127,17 +131,14 @@ public partial class App : Application
     {
         if (dock == null)
             return;
-        if (visible && !dock.IsVisible)
-        {
-            if (session?.Options.Behavior.Mode == DockMode.AutoHide)
-                dock.PrepareReveal();
-            dock.Show();
-        }
-        else if (!visible && dock.IsVisible)
-            dock.Hide();
+        bool revealing = visible && !dockVisibilityRequested;
+        dockVisibilityRequested = visible;
+        if (revealing && session?.Options.Behavior.Mode == DockMode.AutoHide)
+            dock.PrepareReveal();
+        dock.SetThemedVisibility(visible);
         if (visibilityMenu != null)
-            visibilityMenu.Text = dock.IsVisible ? "隐藏 Dock" : "显示 Dock";
-        settings?.UpdateDockVisibility(dock.IsVisible);
+            visibilityMenu.Text = visible ? "隐藏 Dock" : "显示 Dock";
+        settings?.UpdateDockVisibility(visible);
         UpdateTrayBehavior();
     }
 
@@ -154,8 +155,8 @@ public partial class App : Application
     {
         if (settings == null)
         {
-            settings = new SettingsWindow(session!, dock?.IsVisible == true, SetDockVisible, EditItem, ReplaceIcon,
-                interaction!.ReadMonitors, SaveBehavior)
+            settings = new SettingsWindow(session!, dockVisibilityRequested, SetDockVisible, EditItem, ReplaceIcon,
+                interaction!.ReadMonitors, SaveBehavior, ShowThemeEditor)
             {
                 ShowActivated = !validationMode
             };

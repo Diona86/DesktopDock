@@ -30,7 +30,7 @@ public partial class DockWindow
     private bool HasTileGrid => TileGrid != null;
     private int TileRows => TileGrid!.Rows;
     private int TileColumns => TileGrid!.Columns;
-    private double GridCell => session.Options.IconSize + 8 + session.Options.Layout.IconSpacing;
+    private double GridCell => ThemedIconSize + 8 + ThemedIconSpacing;
 
     private void InitializeGridResize()
     {
@@ -52,8 +52,8 @@ public partial class DockWindow
         CancelIconLoads();
         iconLoads = new CancellationTokenSource();
         double cell = GridCell;
-        double gap = session.Options.Layout.IconSpacing;
-        double icon = session.Options.IconSize;
+        double gap = ThemedIconSpacing;
+        double icon = ThemedIconSize;
         TileCanvas.Width = grid.Columns * cell;
         TileCanvas.Height = grid.Rows * cell;
         LimitGridSurface(TileCanvas.Width, TileCanvas.Height, work);
@@ -76,6 +76,7 @@ public partial class DockWindow
             AutomationProperties.SetAutomationId(add, "DockAddItem");
             AutomationProperties.SetName(add, "添加项目");
             add.Click += (_, _) => showSettings();
+            ApplyEntryTooltip(add);
             TileCanvas.Children.Add(add);
         }
         return true;
@@ -84,8 +85,8 @@ public partial class DockWindow
     private void LimitGridSurface(double width, double height, DockWindowPosition.WorkArea work)
     {
         Size chrome = GridChrome();
-        Surface.Width = Math.Min(width + chrome.Width, Math.Max(1, work.Width - EdgeGap * 2));
-        Surface.Height = Math.Min(height + chrome.Height, Math.Max(1, work.Height - EdgeGap * 2));
+        Surface.Width = Math.Min(width + chrome.Width, AvailableGridAxis(work.Width));
+        Surface.Height = Math.Min(height + chrome.Height, AvailableGridAxis(work.Height));
     }
 
     private Size GridChrome()
@@ -97,9 +98,11 @@ public partial class DockWindow
     private Size GridWorkCapacity(DockWindowPosition.WorkArea work, double cell)
     {
         Size chrome = GridChrome();
-        return new Size(Math.Max(1, Math.Floor((work.Width - EdgeGap * 2 - chrome.Width) / cell)),
-            Math.Max(1, Math.Floor((work.Height - EdgeGap * 2 - chrome.Height) / cell)));
+        return new Size(Math.Max(1, Math.Floor((AvailableGridAxis(work.Width) - chrome.Width) / cell)),
+            Math.Max(1, Math.Floor((AvailableGridAxis(work.Height) - chrome.Height) / cell)));
     }
+
+    private double AvailableGridAxis(double workAxis) => Math.Max(1, workAxis - (EdgeGap + ThemeShadowInset) * 2);
 
     private DockGrid GridSnapshot()
     {
@@ -234,8 +237,8 @@ public partial class DockWindow
         if (drag != null && session.Options.Placement == DockPlacement.Floating)
         {
             Size chrome = GridChrome();
-            Size bounds = new(Math.Min(changed.Columns * drag.Cell + chrome.Width, drag.Work.Width - EdgeGap * 2) * drag.Work.Scale,
-                Math.Min(changed.Rows * drag.Cell + chrome.Height, drag.Work.Height - EdgeGap * 2) * drag.Work.Scale);
+            Size bounds = new((Math.Min(changed.Columns * drag.Cell + chrome.Width, AvailableGridAxis(drag.Work.Width)) + ThemeShadowInset * 2) * drag.Work.Scale,
+                (Math.Min(changed.Rows * drag.Cell + chrome.Height, AvailableGridAxis(drag.Work.Height)) + ThemeShadowInset * 2) * drag.Work.Scale);
             Point moved = ResizeOrigin(drag, bounds);
             session.UpdateGrid(changed, (moved.X - drag.Work.Pixels.Left) / drag.Work.Scale,
                 (moved.Y - drag.Work.Pixels.Top) / drag.Work.Scale);

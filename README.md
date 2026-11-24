@@ -1,5 +1,17 @@
 # Desktop Dock 项目文档包
 
+## Windows 11 主题编辑器
+
+退出正在使用同一配置的旧版 Dock，再运行 `artifacts/DesktopDock-P4-win-x64/DesktopDock.exe`。在托盘菜单或「设置 → Dock 外观」打开「主题编辑器」。
+
+- 选择「全局」或「当前 Dock」，再选择主题和参数。中间预览和可见的 Dock 会随修改更新。
+- 「保存」提交修改，「另存为」创建独立主题，「取消」恢复上次保存的设置。内置主题保留原版。
+- 独立主题文件使用 `.docktheme`，包含全部参数和声明式纹理。导入可先预览，保存后加入主题库。
+
+发布和复测步骤见 [P4 验收](docs/PHASE_4_ACCEPTANCE.md) 和 [P4 计划](docs/PHASE_4_PLAN.md)。
+
+## 项目文档
+
 本目录包含：
 - PRD.md：产品需求文档
 - TECHNICAL_DESIGN.md：技术设计与架构方案

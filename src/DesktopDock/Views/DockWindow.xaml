@@ -10,6 +10,13 @@
     <Window.Resources>
         <SolidColorBrush x:Key="DockForeground" Color="#FFF3F3ED"/>
         <SolidColorBrush x:Key="DockAccent" Color="#FFB6CDBD"/>
+        <SolidColorBrush x:Key="DockHoverBackground" Color="#253E5146"/>
+        <SolidColorBrush x:Key="DockHoverBorder" Color="#4B91A797"/>
+        <SolidColorBrush x:Key="DockPressed" Color="#66465A4C"/>
+        <SolidColorBrush x:Key="DockExpanded" Color="#253E5146"/>
+        <SolidColorBrush x:Key="DockExpandedBorder" Color="#3B91A797"/>
+        <SolidColorBrush x:Key="DockResizeBackground" Color="#F0202422"/>
+        <CornerRadius x:Key="DockTileCorner">8</CornerRadius>
         <Style x:Key="ResizeZone" TargetType="Thumb">
             <Setter Property="Focusable" Value="False"/>
             <Setter Property="Template">
@@ -22,7 +29,7 @@
         </Style>
         <Style x:Key="DockButton" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{StaticResource DockForeground}"/>
+            <Setter Property="Foreground" Value="{DynamicResource DockForeground}"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontFamily" Value="Segoe UI, Microsoft YaHei UI"/>
@@ -33,7 +40,7 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
+                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource DockTileCorner}">
                             <Grid>
                                 <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
@@ -44,10 +51,10 @@
                                        ToolTip="拖动调整图标占格，靠近屏幕边缘时向屏幕内拖动">
                                     <Thumb.Template>
                                         <ControlTemplate TargetType="Thumb">
-                                            <Border Background="#F0202422" CornerRadius="3">
+                                            <Border Background="{DynamicResource DockResizeBackground}" CornerRadius="3">
                                                 <Path Data="M 0,5 L 5,0 M 4,5 L 7,2"
                                                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                      Stroke="{StaticResource DockAccent}" StrokeThickness="1"/>
+                                                      Stroke="{DynamicResource DockAccent}" StrokeThickness="1"/>
                                             </Border>
                                         </ControlTemplate>
                                     </Thumb.Template>
@@ -71,23 +78,26 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="local:DockWindow.IsExpandedTile" Value="True">
-                    <Setter Property="Background" Value="#253E5146"/>
-                    <Setter Property="BorderBrush" Value="#3B91A797"/>
+                    <Setter Property="Background" Value="{DynamicResource DockExpanded}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource DockExpandedBorder}"/>
                 </Trigger>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#253E5146"/>
-                    <Setter Property="BorderBrush" Value="#4B91A797"/>
+                    <Setter Property="Background" Value="{DynamicResource DockHoverBackground}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource DockHoverBorder}"/>
                 </Trigger>
                 <Trigger Property="IsPressed" Value="True">
-                    <Setter Property="Background" Value="#66465A4C"/>
+                    <Setter Property="Background" Value="{DynamicResource DockPressed}"/>
                 </Trigger>
                 <Trigger Property="IsKeyboardFocused" Value="True">
-                    <Setter Property="BorderBrush" Value="{StaticResource DockAccent}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource DockAccent}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
     </Window.Resources>
-    <Grid>
+    <Grid x:Name="DockChrome">
+    <Border x:Name="ThemeShadow" IsHitTestVisible="False"/>
+    <Border x:Name="ThemeTreatment" IsHitTestVisible="False"/>
+    <Border x:Name="ThemeTexture" IsHitTestVisible="False"/>
     <Border x:Name="Surface" Background="#F0202422" BorderBrush="#C9525B54"
             BorderThickness="1" Padding="5" CornerRadius="13">
         <DockPanel>
@@ -96,9 +106,9 @@
                         Visibility="Hidden" Focusable="False" Cursor="SizeAll" ToolTip="移动 Dock"
                         AutomationProperties.AutomationId="DockMoveHandle" AutomationProperties.Name="移动 Dock">
                     <StackPanel x:Name="GripDots">
-                        <Ellipse Width="3" Height="3" Fill="{StaticResource DockAccent}" Margin="1.5"/>
-                        <Ellipse Width="3" Height="3" Fill="{StaticResource DockAccent}" Margin="1.5"/>
-                        <Ellipse Width="3" Height="3" Fill="{StaticResource DockAccent}" Margin="1.5"/>
+                        <Ellipse Width="3" Height="3" Fill="{DynamicResource DockAccent}" Margin="1.5"/>
+                        <Ellipse Width="3" Height="3" Fill="{DynamicResource DockAccent}" Margin="1.5"/>
+                        <Ellipse Width="3" Height="3" Fill="{DynamicResource DockAccent}" Margin="1.5"/>
                     </StackPanel>
                 </Button>
             </Border>
@@ -114,7 +124,7 @@
                     <Canvas x:Name="TileCanvas" HorizontalAlignment="Left" VerticalAlignment="Top" Background="Transparent"/>
                 </ScrollViewer>
                 <Canvas IsHitTestVisible="False">
-                    <Border x:Name="DropIndicator" Visibility="Collapsed" Background="{StaticResource DockAccent}"
+                    <Border x:Name="DropIndicator" Visibility="Collapsed" Background="{DynamicResource DockAccent}"
                             CornerRadius="1"/>
                 </Canvas>
             </Grid>

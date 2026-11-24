@@ -1,0 +1,154 @@
+<Window x:Class="DesktopDock.DockThemeEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Desktop Dock · 主题编辑器" AutomationProperties.AutomationId="DockThemeEditor"
+        Width="1120" Height="690" MinWidth="760" MinHeight="510" WindowStartupLocation="CenterScreen"
+        FontFamily="Segoe UI, Microsoft YaHei UI" FontSize="14" KeyDown="EditorKeyDown"
+        Background="{DynamicResource Canvas}">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="SettingsStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <Style x:Key="SectionLabel" TargetType="TextBlock" BasedOn="{StaticResource FieldLabel}">
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="Foreground" Value="{StaticResource Muted}" />
+                <Setter Property="Margin" Value="0,0,0,9" />
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid Background="{StaticResource Canvas}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Border BorderBrush="{StaticResource Rule}" BorderThickness="0,0,0,1" Padding="22,17,22,17">
+            <DockPanel LastChildFill="True">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="导入主题" Click="ImportThemeClick" Margin="0,0,7,0" />
+                    <Button Content="导出主题" Click="ExportThemeClick" />
+                </StackPanel>
+                <TextBlock Text="主题编辑器" FontSize="27" FontWeight="SemiBold" Foreground="{StaticResource Ink}" />
+            </DockPanel>
+        </Border>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="190" />
+                <ColumnDefinition Width="*" MinWidth="248" />
+                <ColumnDefinition Width="300" />
+            </Grid.ColumnDefinitions>
+            <Border Background="{StaticResource Sidebar}" BorderBrush="{StaticResource Rule}" BorderThickness="0,0,1,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="15,19,13,16">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource SectionLabel}" Text="应用范围" />
+                        <ComboBox x:Name="ScopeInput" MinHeight="34" VerticalContentAlignment="Center"
+                                  AutomationProperties.AutomationId="ThemeScope" AutomationProperties.Name="应用范围"
+                                  SelectionChanged="ScopeChanged">
+                            <ComboBoxItem Content="所有 Dock" />
+                            <ComboBoxItem Content="当前 Dock" />
+                        </ComboBox>
+                        <TextBlock x:Name="ScopeHint" Style="{StaticResource FieldHint}" FontSize="12" LineHeight="18" Margin="0,7,0,0" />
+                        <TextBlock Style="{StaticResource SectionLabel}" Text="主题" Margin="0,18,0,7" />
+                        <ComboBox x:Name="ThemeInput" MinHeight="34" VerticalContentAlignment="Center"
+                                  AutomationProperties.AutomationId="ThemeSelection" AutomationProperties.Name="选择主题"
+                                  DisplayMemberPath="Name" SelectedValuePath="Id" SelectionChanged="ThemeChanged" />
+                        <Border Margin="0,17,0,14" BorderBrush="{StaticResource Rule}" BorderThickness="0,1,0,0" />
+                        <ListBox x:Name="CategoryInput" FontSize="14" BorderThickness="0" Padding="0" Background="Transparent"
+                                 ItemContainerStyle="{StaticResource NavItem}" AutomationProperties.AutomationId="ThemeCategories"
+                                 AutomationProperties.Name="参数分类" SelectionChanged="CategoryChanged" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+            <Grid Grid.Column="1" Margin="20,18,20,18">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <DockPanel Margin="0,0,0,11" LastChildFill="True">
+                    <TextBlock x:Name="PreviewThemeName" DockPanel.Dock="Right" FontSize="12" Foreground="{StaticResource Muted}"
+                               VerticalAlignment="Center" MaxWidth="150" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="实时预览" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Ink}" />
+                </DockPanel>
+                <Border Grid.Row="1" CornerRadius="9" Background="#FF283630" BorderBrush="#FF4E5952" BorderThickness="1" ClipToBounds="True">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Border Background="#FF43524A" Margin="24,22,35,24" HorizontalAlignment="Right" Width="120" CornerRadius="3" Opacity=".68" />
+                        <Border Grid.Row="1" Background="#FF35463F" Margin="35,0,22,22" HorizontalAlignment="Left" Width="160" CornerRadius="3" />
+                        <Border Grid.RowSpan="2" VerticalAlignment="Center" Height="1" Background="#2C88968C" />
+                        <Viewbox Grid.RowSpan="2" Stretch="Uniform" StretchDirection="DownOnly" Margin="13">
+                            <Grid x:Name="PreviewRoot" RenderTransformOrigin=".5,.5" AutomationProperties.AutomationId="ThemePreview">
+                                <StackPanel x:Name="PreviewStack" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <Border x:Name="PreviewGroup" Visibility="Collapsed" HorizontalAlignment="Center" Margin="0,0,0,12">
+                                        <Grid>
+                                            <Border x:Name="PreviewGroupShadow" IsHitTestVisible="False" />
+                                            <Border x:Name="PreviewGroupTreatment" IsHitTestVisible="False" />
+                                            <Border x:Name="PreviewGroupTexture" IsHitTestVisible="False" />
+                                            <StackPanel x:Name="PreviewGroupIcons" Orientation="Horizontal" />
+                                        </Grid>
+                                    </Border>
+                                    <Border x:Name="PreviewSurface" HorizontalAlignment="Center">
+                                        <Grid>
+                                            <Border x:Name="PreviewShadow" IsHitTestVisible="False" />
+                                            <Border x:Name="PreviewTreatment" IsHitTestVisible="False" />
+                                            <Border x:Name="PreviewTexture" IsHitTestVisible="False" />
+                                            <Grid x:Name="PreviewLayout">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel x:Name="PreviewGrip" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4,0,9,0" />
+                                                <UniformGrid x:Name="PreviewIcons" Grid.Column="1" Rows="1" />
+                                            </Grid>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+                        </Viewbox>
+                    </Grid>
+                </Border>
+                <StackPanel Grid.Row="2" Margin="0,11,0,0">
+                    <WrapPanel>
+                        <ComboBox x:Name="DemoTypeInput" MinWidth="105" Height="33" SelectedIndex="0" Margin="0,0,7,4"
+                                  VerticalContentAlignment="Center" AutomationProperties.Name="要演示的动画">
+                            <ComboBoxItem Content="呼出" />
+                            <ComboBoxItem Content="收起" />
+                            <ComboBoxItem Content="分组展开" />
+                        </ComboBox>
+                        <Button Content="演示动画" Click="PlayPreviewClick" Margin="0,0,0,4" />
+                    </WrapPanel>
+                    <TextBlock Style="{StaticResource FieldHint}" FontSize="12" LineHeight="17" Margin="0,5,0,0"
+                               Text="更改会同步预览到 Dock，保存后才写入配置。" />
+                </StackPanel>
+            </Grid>
+            <Border Grid.Column="2" Background="#FFF7F7F2" BorderBrush="{StaticResource Rule}" BorderThickness="1,0,0,0">
+                <DockPanel LastChildFill="True">
+                    <Border DockPanel.Dock="Top" BorderBrush="{StaticResource Rule}" BorderThickness="0,0,0,1" Padding="17,18,17,13">
+                        <TextBlock x:Name="InspectorTitle" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Ink}" />
+                    </Border>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="17,14,15,16">
+                        <StackPanel x:Name="Inspector" AutomationProperties.AutomationId="ThemeParameters" />
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+        </Grid>
+        <Border Grid.Row="2" BorderBrush="{StaticResource Rule}" BorderThickness="0,1,0,0" Padding="17,11">
+            <DockPanel LastChildFill="True">
+                <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button x:Name="UndoButton" Content="撤销" Click="UndoClick" Margin="0,0,6,0" />
+                    <Button Content="恢复默认值" Click="ResetClick" Margin="0,0,13,0" />
+                    <Button Content="取消" Click="CancelClick" Margin="0,0,6,0" />
+                    <Button Content="另存为" Click="SaveAsClick" Margin="0,0,6,0" />
+                    <Button x:Name="SaveButton" Style="{StaticResource PrimaryButton}" Content="保存" Click="SaveClick"
+                            AutomationProperties.AutomationId="SaveDockTheme" />
+                </WrapPanel>
+                <TextBlock x:Name="Feedback" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,14,0"
+                           Foreground="{StaticResource Muted}" AutomationProperties.LiveSetting="Polite" />
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>

@@ -43,9 +43,10 @@ public partial class App
         new("dock_tooltip", "Open or close the real WPF tooltip for a test Dock item.",
             """{"type":"object","properties":{"id":{"type":"string","format":"uuid"},"open":{"type":"boolean"}},"required":["id","open"],"additionalProperties":false}"""),
         new("dock_capture", "Render the selected app window's own visual tree as a PNG.",
-            """{"type":"object","properties":{"window":{"enum":["dock","settings","group"]}},"required":["window"],"additionalProperties":false}"""),
+            """{"type":"object","properties":{"window":{"enum":["dock","settings","group","themeEditor"]}},"required":["window"],"additionalProperties":false}"""),
         .. P2Tools(),
-        .. P3Tools()
+        .. P3Tools(),
+        .. P4Tools()
     ];
 
     private async Task RunMcp()
@@ -159,9 +160,12 @@ public partial class App
                     "dock" => testDock,
                     "settings" => settings,
                     "group" => testDock.CurrentGroupPanel,
+                    "themeEditor" => themeEditor,
                     _ => throw new ArgumentException("Unknown window.")
                 });
             default:
+                if (name.StartsWith("dock_p4_", StringComparison.Ordinal))
+                    return InvokeP4Mcp(name, args);
                 return name.StartsWith("dock_p3_", StringComparison.Ordinal) ? InvokeP3Mcp(name, args) : InvokeP2Mcp(name, args);
         }
         return McpReply(ReadTestState());
@@ -217,8 +221,9 @@ public partial class App
         if (window?.IsVisible != true || window.Content is not FrameworkElement visual)
             throw new InvalidOperationException("Show the window before capturing it.");
         window.UpdateLayout();
-        int width = Math.Max(1, (int)Math.Ceiling(visual.ActualWidth));
-        int height = Math.Max(1, (int)Math.Ceiling(visual.ActualHeight));
+        Thickness margin = visual.Margin;
+        int width = Math.Max(1, (int)Math.Ceiling(visual.ActualWidth + margin.Left + margin.Right));
+        int height = Math.Max(1, (int)Math.Ceiling(visual.ActualHeight + margin.Top + margin.Bottom));
         if (width > 4096 || height > 4096)
             throw new InvalidOperationException("The window is too large for a validation capture.");
 

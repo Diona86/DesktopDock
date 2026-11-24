@@ -14,11 +14,13 @@ public partial class SettingsWindow : Window
     private readonly Action<DockItem> replaceIcon;
     private readonly Func<IReadOnlyList<DockMonitor>> monitors;
     private readonly Func<DockBehaviorOptions, string?> saveBehavior;
+    private readonly Action? openThemeEditor;
     private bool dockVisible;
 
     public SettingsWindow(DockSession session, bool dockVisible, Action<bool> setDockVisible,
         Action<DockItem> editItem, Action<DockItem> replaceIcon,
-        Func<IReadOnlyList<DockMonitor>>? monitors = null, Func<DockBehaviorOptions, string?>? saveBehavior = null)
+        Func<IReadOnlyList<DockMonitor>>? monitors = null, Func<DockBehaviorOptions, string?>? saveBehavior = null,
+        Action? openThemeEditor = null)
     {
         this.session = session;
         this.setDockVisible = setDockVisible;
@@ -26,7 +28,9 @@ public partial class SettingsWindow : Window
         this.replaceIcon = replaceIcon;
         this.monitors = monitors ?? (() => Array.Empty<DockMonitor>());
         this.saveBehavior = saveBehavior ?? SaveBehaviorToSession;
+        this.openThemeEditor = openThemeEditor;
         InitializeComponent();
+        ThemeEditorButton.Visibility = openThemeEditor == null ? Visibility.Collapsed : Visibility.Visible;
         UpdateDockVisibility(dockVisible);
         RefreshItems();
         session.Changed += SessionChanged;
@@ -41,6 +45,8 @@ public partial class SettingsWindow : Window
     }
 
     internal void SelectPage(int index) => Navigation.SelectedIndex = index;
+
+    private void OpenThemeEditor(object sender, RoutedEventArgs e) => openThemeEditor?.Invoke();
 
     internal bool IsEditingShortcuts => Navigation.SelectedIndex == 5;
 

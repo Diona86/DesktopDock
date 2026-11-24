@@ -43,6 +43,8 @@
             <Grid Grid.Row="1">
                 <ScrollViewer x:Name="AppearancePage" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel MaxWidth="470" HorizontalAlignment="Left">
+                        <Button x:Name="ThemeEditorButton" Content="主题编辑器…" Click="OpenThemeEditor"
+                                HorizontalAlignment="Left" Margin="0,0,0,18" />
                         <TextBlock Style="{StaticResource FieldLabel}" Text="图标尺寸" />
                         <TextBox x:Name="IconSizeInput" AutomationProperties.Name="图标尺寸" Width="130" HorizontalAlignment="Left" />
                         <TextBlock Style="{StaticResource FieldHint}" Margin="0,6,0,22" Text="16–96 DIP" />

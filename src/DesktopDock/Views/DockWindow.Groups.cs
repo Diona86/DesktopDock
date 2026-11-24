@@ -46,6 +46,8 @@ public partial class DockWindow
         }
 
         var panel = new DockGroupPanel(this, id, parentId, buttonStyle);
+        if (themeVisuals != null)
+            panel.ApplyTheme(themeVisuals, themeAnimationsEnabled, themePerformanceMode);
         panel.ContextMenu = CreatePanelMenu(panel);
         panel.BackButton.Click += (_, _) => CloseGroupAndChildren(panel);
         panel.PreviewKeyDown += PreviewInteractionKey;
@@ -137,7 +139,7 @@ public partial class DockWindow
     private void RefreshPanel(DockGroupPanel panel, DockGroup group, DockWindowPosition.WorkArea work)
     {
         Guid[] ids = session.Entries.Where(entry => entry.ParentId == group.Id).Select(entry => entry.Id).ToArray();
-        panel.Refresh(group, session.Options, work, ids, CreateEntryButton);
+        panel.Refresh(group, session.Options with { Layout = ThemedLayout(), IconSize = ThemedIconSize }, work, ids, CreateEntryButton);
     }
 
     private void OnGroupOwnerLocationChanged(object? sender, EventArgs e) => PositionGroupPanels();
@@ -281,7 +283,7 @@ public partial class DockWindow
                 direction = panel.Direction.ToString(),
                 actualDirection = panel.ActualDirection.ToString(),
                 bounds = DockWindowPosition.TryGetBounds(panel, out Rect bounds) ? DescribeBounds(bounds) : null,
-                animationMilliseconds = DockGroupPanel.AnimationMilliseconds,
+                animationMilliseconds = panel.EffectiveAnimationMilliseconds,
                 animationActive = panel.AnimationActive,
                 opacity = panel.AnimatedOpacity,
                 nativeVisible = DockWindowPosition.IsNativeVisible(panel),

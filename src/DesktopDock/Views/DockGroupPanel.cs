@@ -4,7 +4,6 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Interop;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
 
 namespace DesktopDock;
 
@@ -19,14 +18,21 @@ internal sealed class DockGroupPanel : Window
     private static readonly Brush DropFill = FrozenBrush(Color.FromArgb(34, 137, 215, 188));
 
     private readonly Border surface;
+    private readonly Border shadowPlate = new() { IsHitTestVisible = false };
+    private readonly Border treatment = new() { IsHitTestVisible = false };
+    private readonly Border texture = new() { IsHitTestVisible = false };
+    private readonly Border separator;
+    private readonly Grid visualRoot;
     private readonly Canvas overlay;
     private readonly Border indicator;
     private readonly TextBlock title;
     private readonly ScrollViewer scroll;
     private readonly List<Button> entryButtons = [];
-    private readonly ScaleTransform expansionScale = new(1, 1);
+    private readonly DockThemeMotion motion;
     private CancellationTokenSource? iconLoads;
-    private bool animationRunning;
+    private DockThemeVisuals? theme;
+    private bool animationsEnabled = true;
+    private bool performanceMode;
     private long lastDragScroll;
 
     internal DockGroupPanel(Window owner, Guid groupId, Guid? parentId, Style chromeStyle)
@@ -91,7 +97,7 @@ internal sealed class DockGroupPanel : Window
         shell.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         shell.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
         shell.Children.Add(header);
-        var separator = new Border { Child = scroll, BorderBrush = RuleColor, BorderThickness = new Thickness(0, 1, 0, 0) };
+        separator = new Border { Child = scroll, BorderBrush = RuleColor, BorderThickness = new Thickness(0, 1, 0, 0) };
         Grid.SetRow(separator, 1);
         shell.Children.Add(separator);
         indicator = new Border { Visibility = Visibility.Collapsed, Background = DropFill, BorderBrush = Accent, CornerRadius = new CornerRadius(5) };
@@ -107,11 +113,11 @@ internal sealed class DockGroupPanel : Window
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(9),
             Padding = new Thickness(8),
-            RenderTransform = expansionScale,
-            RenderTransformOrigin = new Point(0.5, 0.5),
             Child = shell
         };
-        Content = surface;
+        visualRoot = new Grid { Children = { shadowPlate, treatment, texture, surface } };
+        Content = visualRoot;
+        motion = new DockThemeMotion(visualRoot);
         AutomationProperties.SetAutomationId(this, $"DockGroupPanel_{groupId:N}");
         Closed += (_, _) => CancelIcons();
     }
@@ -123,8 +129,9 @@ internal sealed class DockGroupPanel : Window
     internal DockExpandDirection Direction { get; private set; }
     internal DockExpandDirection ActualDirection { get; private set; }
     internal IReadOnlyList<Button> EntryButtons => entryButtons;
-    internal bool AnimationActive => animationRunning;
-    internal double AnimatedOpacity => surface.Opacity;
+    internal bool AnimationActive => motion.Active;
+    internal int EffectiveAnimationMilliseconds => MotionSettings().Milliseconds;
+    internal double AnimatedOpacity => visualRoot.Opacity;
     internal bool FeedbackVisible => indicator.IsVisible;
 
     internal void Refresh(DockGroup group, DockOptions options, DockWindowPosition.WorkArea work, IReadOnlyList<Guid> entries,
@@ -133,7 +140,7 @@ internal sealed class DockGroupPanel : Window
         ExpandMode = group.ExpandMode;
         Direction = group.Direction == DockExpandDirection.Auto ? options.Layout.ExpansionDirection : group.Direction;
         Title = title.Text = group.Name;
-        title.ToolTip = group.Name;
+        title.ToolTip = MakeTooltip(group.Name);
         MaxWidth = Math.Max(1, Math.Min(660, work.Width - 12));
         MaxHeight = Math.Max(1, Math.Min(470, work.Height - 12));
         MinWidth = Math.Min(182, MaxWidth);
@@ -166,8 +173,9 @@ internal sealed class DockGroupPanel : Window
         }
 
         double cell = side + gap;
-        scroll.MaxWidth = Math.Max(1, MaxWidth - 18);
-        scroll.MaxHeight = Math.Max(1, MaxHeight - 53);
+        double edge = (surface.Padding.Left + surface.BorderThickness.Left + (theme?.ShadowInset ?? 0)) * 2;
+        scroll.MaxWidth = Math.Max(1, MaxWidth - edge);
+        scroll.MaxHeight = Math.Max(1, MaxHeight - 35 - edge);
         if (limit > 0)
         {
             if (ExpandMode == DockGroupExpandMode.Horizontal)
@@ -191,30 +199,64 @@ internal sealed class DockGroupPanel : Window
         scroll.Content = cells is not null ? cells : new TextBlock
         {
             Text = "将项目拖入此分组",
-            Foreground = Muted,
+            Foreground = theme?.Foreground ?? Muted,
             Margin = new Thickness(6, 9, 6, 10),
             IsHitTestVisible = false
         };
-        surface.Measure(new Size(MaxWidth, MaxHeight));
-        Width = Math.Clamp(surface.DesiredSize.Width, MinWidth, MaxWidth);
-        Height = Math.Clamp(surface.DesiredSize.Height, 1, MaxHeight);
+        visualRoot.Measure(new Size(MaxWidth, MaxHeight));
+        Width = Math.Clamp(visualRoot.DesiredSize.Width, MinWidth, MaxWidth);
+        Height = Math.Clamp(visualRoot.DesiredSize.Height, 1, MaxHeight);
     }
+
+    internal void ApplyTheme(DockThemeVisuals visuals, bool enableAnimations, bool lowCostEffects)
+    {
+        bool motionChanged = animationsEnabled != enableAnimations || performanceMode != lowCostEffects ||
+            theme?.Tokens.GroupAnimation != visuals.Tokens.GroupAnimation || theme?.Tokens.GroupMilliseconds != visuals.Tokens.GroupMilliseconds;
+        animationsEnabled = enableAnimations;
+        performanceMode = lowCostEffects;
+        if (motionChanged)
+            motion.Stop();
+        if (ReferenceEquals(theme, visuals))
+            return;
+
+        theme = visuals;
+        theme.ApplySurface(surface, treatment, texture, shadowPlate);
+        theme.ApplyButtonResources(Resources);
+        surface.Padding = new Thickness(visuals.Tokens.Padding >= 0 ? visuals.Tokens.Padding : 8);
+        visualRoot.Margin = new Thickness(visuals.ShadowInset);
+        title.Foreground = BackButton.Foreground = visuals.Foreground;
+        separator.BorderBrush = visuals.Border;
+        indicator.BorderBrush = visuals.Accent;
+        indicator.Background = visuals.Expanded;
+        title.ToolTip = MakeTooltip(title.Text);
+        BackButton.ToolTip = MakeTooltip(ParentId.HasValue
+            ? "返回上一级。可将项目拖到这里移至上一级。" : "关闭分组。可将项目拖到这里移回 Dock。");
+        if (scroll.Content is TextBlock text)
+            text.Foreground = visuals.Foreground;
+    }
+
+    private ToolTip MakeTooltip(string text)
+    {
+        var tooltip = new ToolTip { Content = text };
+        theme?.ApplyTooltip(tooltip);
+        return tooltip;
+    }
+
+    private (DockThemeAnimation Kind, int Milliseconds) MotionSettings() => DockThemeMotion.Effective(
+        theme?.Tokens.GroupAnimation ?? DockThemeAnimation.Scale, theme?.Tokens.GroupMilliseconds ?? AnimationMilliseconds,
+        animationsEnabled, performanceMode);
 
     internal void AnimateOpen()
     {
-        if (!SystemParameters.ClientAreaAnimation)
-            return;
-        animationRunning = true;
-        var motion = new DoubleAnimation(0.94, 1, TimeSpan.FromMilliseconds(AnimationMilliseconds))
+        (DockThemeAnimation kind, int milliseconds) = MotionSettings();
+        Vector direction = ActualDirection switch
         {
-            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
-            FillBehavior = FillBehavior.Stop
+            DockExpandDirection.Up => new Vector(0, 8),
+            DockExpandDirection.Down => new Vector(0, -8),
+            DockExpandDirection.Left => new Vector(8, 0),
+            _ => new Vector(-8, 0)
         };
-        expansionScale.BeginAnimation(ScaleTransform.ScaleXProperty, motion);
-        expansionScale.BeginAnimation(ScaleTransform.ScaleYProperty, motion);
-        var opacityMotion = new DoubleAnimation(0.30, 1, motion.Duration) { FillBehavior = FillBehavior.Stop };
-        opacityMotion.Completed += (_, _) => animationRunning = false;
-        surface.BeginAnimation(OpacityProperty, opacityMotion);
+        motion.Play(kind, milliseconds, true, direction);
     }
 
     internal void Place(Rect container, Rect anchor, DockWindowPosition.WorkArea work, DockExpandDirection preferred, double gapDips)

@@ -39,7 +39,7 @@ public partial class DockWindow
 
     internal bool ContainsInteraction(int x, int y, bool forClick = false)
     {
-        if (!IsVisible)
+        if (!IsVisible || !allowPointerInput)
             return false;
         if (moveStart.HasValue || draggingItem.HasValue || IsGridResizing)
             return true;
