@@ -2,6 +2,7 @@
 param(
     [string]$Executable = (Join-Path $PSScriptRoot '../../artifacts/DesktopDock-P1-win-x64/DesktopDock.exe'),
     [string]$RunDirectory = (Join-Path $PSScriptRoot "../../artifacts/p1-mcp-$([guid]::NewGuid().ToString('N'))"),
+    [int]$ExpectedSchemaVersion = 1,
     [ValidateRange(5, 180)][int]$RequestTimeoutSeconds = 45,
     [switch]$SkipBrowser,
     [switch]$SkipShellAssociations
@@ -334,7 +335,7 @@ try {
         Assert-Check (($after.items | ConvertTo-Json -Depth 12 -Compress) -eq ($beforeRestart.items | ConvertTo-Json -Depth 12 -Compress)) 'Item settings changed on restart.'
         Assert-Check (($after.options | ConvertTo-Json -Depth 12 -Compress) -eq ($beforeRestart.options | ConvertTo-Json -Depth 12 -Compress)) 'Dock options changed on restart.'
         $stored = Get-Content -LiteralPath (Join-Path $profileDir 'dock.json') -Encoding utf8 -Raw | ConvertFrom-Json
-        Assert-Check ($stored.schemaVersion -eq 1) 'Persisted JSON schemaVersion did not equal 1.'
+        Assert-Check ($stored.schemaVersion -eq $ExpectedSchemaVersion) "Persisted JSON schemaVersion did not equal $ExpectedSchemaVersion."
     }
 
     Test-Check 'P1-10 remove reference and retain original hashes' {

@@ -13,6 +13,8 @@ public partial class DockWindow
         return new
         {
             visible = IsVisible,
+            nativeVisible = DockWindowPosition.IsNativeVisible(this),
+            interactionMenus = InteractionMenuBounds(),
             transparent = AllowsTransparency,
             background = Background?.ToString(),
             surfaceBackground = Surface.Background?.ToString(),
@@ -90,7 +92,7 @@ public partial class DockWindow
             throw new ArgumentException("移动距离必须是有限的 DIP 数值。");
 
         Rect before = RequireWindowBounds();
-        DockWindowPosition.WorkArea work = DockWindowPosition.GetWorkArea(this);
+        DockWindowPosition.WorkArea work = GetDockWorkArea();
         Guid[] order = RenderedItemIds();
         bool locked = PositionLocked;
         bool gripVisibleBefore = MoveHandle.IsVisible;

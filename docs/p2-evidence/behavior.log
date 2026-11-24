@@ -1,0 +1,48 @@
+Desktop Dock P2 .NET 10.0.404 Release pure behavior test
+Source copies: DockBehavior.cs, DockBehaviorGeometry.cs, DockBehaviorController.cs and DockModels.cs.
+Synthetic monitor bounds, sample timestamps and foreground policy outcomes. No real input or display manipulation.
+PASS mixed DPI top offset on negative virtual origin
+PASS different size and overlapping zones
+PASS bottom uses full screen edge
+PASS left vertical scale
+PASS right vertical scale
+PASS half-open boundaries
+PASS first configured zone wins overlap
+PASS per-monitor explicit empty disables fallback
+PASS default follows edge and derives per screen
+PASS outside display clips to empty
+PASS reject duplicate zone ID
+PASS reject reversed hot zone
+PASS reject reserved F12
+PASS reject duplicate chord
+PASS reject duplicate application rule
+PASS auto-hide begins fully hidden
+PASS dwell pending until exact delay
+PASS reveal uses monitor and zone hide delay
+PASS reenter union resets old hide timer
+PASS outside dwell closes
+PASS unsafe policy clears stale dwell
+PASS fresh dwell after allowed policy
+PASS explicit dismissal blocks held triggering edge
+PASS different overlapping candidate resets dwell
+PASS new candidate can reveal
+PASS sample gap resets hit clock
+PASS pause clears dwell and suppresses edge
+PASS shortcut bypass and peek grace
+PASS peek hides after grace and leave delay
+PASS locked ignores leave
+PASS outside or Escape dismisses locked auto hide
+PASS resident ignores outside dismissal
+PASS explicit toggle can hide resident
+PASS resident does not run hot-zone reveal
+PASS shortcut from hidden resident is temporary
+PASS explicit dismissal closes temporarily revealed resident
+PASS explicit dismissal preserves locked resident
+PASS adjacent fractional percentages do not create a one-pixel overlap
+PASS same zone ID on a different monitor still resets dwell
+PASS reveal uses the second monitor after full new dwell
+PASS zero reveal delay allows first eligible sample
+PASS zero hide delay closes and suppresses reopening while still at trigger
+PASS leaving and re-entering rearms auto-hide trigger
+PASS 43 pure behavior assertions
+probeExitCode=0

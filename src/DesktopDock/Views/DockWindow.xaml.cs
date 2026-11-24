@@ -50,11 +50,12 @@ public partial class DockWindow : Window
         buttonStyle = (Style)FindResource("DockButton");
 
         SettingsButton.Click += (_, _) => showSettings();
-        Surface.ContextMenu = new ContextMenu();
+        Surface.ContextMenu = TrackInteractionMenu(new ContextMenu());
         Surface.ContextMenu.Items.Add(CreateMenuItem("打开设置", showSettings));
         Surface.ContextMenu.Items.Add(CreateMenuItem("隐藏 Dock", requestHide));
         Surface.PreviewMouseMove += (_, e) => UpdateGrip(e.OriginalSource as DependencyObject);
         Surface.MouseLeave += (_, _) => UpdateGrip(null, false);
+        PreviewKeyDown += PreviewInteractionKey;
         MoveHandle.PreviewMouseLeftButtonDown += BeginMove;
         MoveHandle.PreviewMouseMove += ContinueMove;
         MoveHandle.PreviewMouseLeftButtonUp += EndMove;
@@ -72,7 +73,10 @@ public partial class DockWindow : Window
             if (IsVisible)
                 QueuePlacement();
             else
+            {
                 UpdateGrip(null, false);
+                CloseInteractionMenus();
+            }
         };
         session.Changed += SessionChanged;
         Closed += (_, _) =>
@@ -98,7 +102,7 @@ public partial class DockWindow : Window
             // Use the window's own DPI callback and defer changes to the visual tree until layout returns.
             dpiRefresh = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
             {
-                if (DockWindowPosition.GetWorkArea(this).Scale != layoutScale)
+                if (GetDockWorkArea().Scale != layoutScale)
                     Refresh();
             }));
         }
@@ -107,7 +111,7 @@ public partial class DockWindow : Window
     private void Refresh()
     {
         DockOptions options = session.Options;
-        DockWindowPosition.WorkArea work = DockWindowPosition.GetWorkArea(this);
+        DockWindowPosition.WorkArea work = GetDockWorkArea();
         layoutScale = work.Scale;
         vertical = options.Placement == DockPlacement.Left || options.Placement == DockPlacement.Right ||
             (options.Placement == DockPlacement.Floating && options.FloatingVertical);
@@ -246,7 +250,7 @@ public partial class DockWindow : Window
         menu.Items.Add(location);
         menu.Items.Add(new Separator());
         menu.Items.Add(CreateMenuItem("从 Dock 移除", () => session.RemoveItem(item.Id)));
-        return menu;
+        return TrackInteractionMenu(menu);
     }
 
     internal void OpenFromDock(Guid id)
@@ -502,7 +506,7 @@ public partial class DockWindow : Window
             !DockWindowPosition.TryGetBounds(this, out moveBounds) || !MoveHandle.CaptureMouse())
             return;
 
-        moveArea = DockWindowPosition.GetWorkArea(this);
+        moveArea = GetDockWorkArea();
         moveStart = point;
         movedDock = false;
         e.Handled = true;
@@ -579,7 +583,7 @@ public partial class DockWindow : Window
         if (moveStart.HasValue || !DockWindowPosition.TryGetBounds(this, out Rect bounds))
             return;
 
-        DockWindowPosition.WorkArea work = DockWindowPosition.GetWorkArea(this);
+        DockWindowPosition.WorkArea work = GetDockWorkArea();
         Rect area = work.Pixels;
         double inset = EdgeGap * work.Scale;
         double centeredX = area.Left + (area.Width - bounds.Width) / 2;

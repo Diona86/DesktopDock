@@ -20,13 +20,17 @@ internal static class DockWindowPosition
             Math.Clamp(location.Y, Pixels.Top, Math.Max(Pixels.Top, Pixels.Bottom - window.Height)));
     }
 
-    internal static WorkArea GetWorkArea(Window window)
+    internal static WorkArea GetWorkArea(Window window, DockMonitor? revealMonitor = null)
     {
+        if (revealMonitor is { } target)
+            return new WorkArea(new Rect(target.WorkLeft, target.WorkTop,
+                target.WorkRight - target.WorkLeft, target.WorkBottom - target.WorkTop), target.Scale);
+
         nint handle = new WindowInteropHelper(window).Handle;
         uint dpi = handle != 0 ? GetDpiForWindow(handle) : 0;
         double scale = dpi != 0 ? dpi / 96d : VisualTreeHelper.GetDpi(window).DpiScaleX;
 
-        // P1 uses the primary screen. Persist floating position relative to its work area.
+        // Resident placement and the fallback use the primary screen.
         var monitor = new MonitorInfo { Size = Marshal.SizeOf<MonitorInfo>() };
         if (GetMonitorInfo(MonitorFromPoint(new NativePoint(), DefaultToPrimary), ref monitor))
             return new WorkArea(monitor.Work.ToRect(), scale);
@@ -36,8 +40,10 @@ internal static class DockWindowPosition
     }
 
     internal static bool TryGetBounds(Window window, out Rect bounds)
+        => TryGetBounds(new WindowInteropHelper(window).Handle, out bounds);
+
+    internal static bool TryGetBounds(nint handle, out Rect bounds)
     {
-        nint handle = new WindowInteropHelper(window).Handle;
         if (handle != 0 && GetWindowRect(handle, out NativeRect rect))
         {
             bounds = rect.ToRect();
@@ -46,6 +52,12 @@ internal static class DockWindowPosition
 
         bounds = Rect.Empty;
         return false;
+    }
+
+    internal static bool IsNativeVisible(Window window)
+    {
+        nint handle = new WindowInteropHelper(window).Handle;
+        return handle != 0 && IsWindowVisible(handle);
     }
 
     internal static bool TryGetPointer(out Point point)
@@ -89,6 +101,10 @@ internal static class DockWindowPosition
 
     [DllImport("user32.dll")]
     private static extern uint GetDpiForWindow(nint window);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool IsWindowVisible(nint window);
 
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]

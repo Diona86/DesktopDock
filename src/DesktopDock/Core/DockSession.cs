@@ -5,7 +5,7 @@ namespace DesktopDock;
 
 public sealed class DockSession : IDisposable
 {
-    private const int CurrentVersion = 1;
+    private const int CurrentVersion = 2;
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -162,7 +162,9 @@ public sealed class DockSession : IDisposable
             if (ReferenceEquals(next, _state))
                 return;
 
-            Write(next);
+            bool migrate = _state.SchemaVersion == 1;
+            next = next with { SchemaVersion = CurrentVersion };
+            Write(next, migrate);
             _state = next;
         }
 
@@ -180,7 +182,7 @@ public sealed class DockSession : IDisposable
                 version.ValueKind != JsonValueKind.Number || !version.TryGetInt32(out int number))
                 throw new InvalidDataException("Dock 配置缺少有效的版本号，原文件已保留。");
 
-            if (number != CurrentVersion)
+            if (number is not (1 or CurrentVersion))
                 throw new InvalidDataException($"Dock 配置版本 {number} 与当前版本 {CurrentVersion} 不兼容，原文件已保留。");
 
             Configuration? state = root.Deserialize<Configuration>(JsonOptions);
@@ -209,7 +211,7 @@ public sealed class DockSession : IDisposable
         }
     }
 
-    private void Write(Configuration state)
+    private void Write(Configuration state, bool migrate)
     {
         string temporary = Path.Combine(Path.GetDirectoryName(_configPath)!, $".dock-{Guid.NewGuid():N}.tmp");
         bool created = false;
@@ -223,7 +225,10 @@ public sealed class DockSession : IDisposable
             }
 
             if (File.Exists(_configPath))
-                File.Replace(temporary, _configPath, null);
+            {
+                string? backup = migrate ? Path.Combine(Path.GetDirectoryName(_configPath)!, $"dock.v1-{Guid.NewGuid():N}.bak") : null;
+                File.Replace(temporary, _configPath, backup);
+            }
             else
                 File.Move(temporary, _configPath);
         }

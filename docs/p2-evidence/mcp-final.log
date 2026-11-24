@@ -1,0 +1,54 @@
+2026-11-24T07:34:29.908+00:00 START exe=D:\myapp\desk-design\artifacts\DesktopDock-P2-win-x64\DesktopDock.exe directory=D:\myapp\desk-design\artifacts\p2-final-mcp
+2026-11-24T07:34:30.974+00:00 MCP attached pid=23684 protocol=2025-11-25
+2026-11-24T07:34:30.986+00:00 Physical monitor enumeration: [{"id": "C9E56E49A34B35CA63C7FB0A", "name": "Generic PnP Monitor (\\\\.\\DISPLAY1)", "left": 0, "top": 0, "right": 2560, "bottom": 1440, "workLeft": 0, "workTop": 0, "workRight": 2560, "workBottom": 1440, "scale": 1, "primary": true}]
+2026-11-24T07:34:30.986+00:00 PASS native monitor enumeration
+2026-11-24T07:34:31.019+00:00 PASS P1 current profile startup and unchanged v1 bytes
+2026-11-24T07:34:31.053+00:00 PASS AutoHide hides both the WPF view and its HWND
+2026-11-24T07:34:31.055+00:00 PASS atomic v1 to v2 backup byte equality sha256=8fc847553733166520ef9e023135429d999408e631fe0aa88aa5658e0eb96b9e
+2026-11-24T07:34:31.055+00:00 PASS negative origin and 150% DPI top zone extent
+2026-11-24T07:34:31.056+00:00 PASS physical rect wider overlapping zone (-1536, -197, -384, -179)
+2026-11-24T07:34:31.056+00:00 PASS physical rect bottom (400, 886, 1200, 896)
+2026-11-24T07:34:31.056+00:00 PASS physical rect left (2, 225, 14, 675)
+2026-11-24T07:34:31.056+00:00 PASS physical rect right (1589, 225, 1597, 675)
+2026-11-24T07:34:31.066+00:00 PASS Maximized blocks automatic reveal
+2026-11-24T07:34:31.069+00:00 PASS BorderlessFullScreen blocks automatic reveal
+2026-11-24T07:34:31.071+00:00 PASS ExclusiveFullScreen blocks automatic reveal
+2026-11-24T07:34:31.074+00:00 PASS Unknown blocks automatic reveal
+2026-11-24T07:34:31.077+00:00 PASS first configured overlap owns the full dwell
+2026-11-24T07:34:31.082+00:00 PASS exact dwell reveals on the matching display
+2026-11-24T07:34:31.096+00:00 PASS re-entry cancels prior delay, continuous leave closes at configured delay
+2026-11-24T07:34:31.108+00:00 PASS non-overlapping portion may reveal immediately
+2026-11-24T07:34:31.134+00:00 PASS explicit dismissal suppresses the held trigger
+2026-11-24T07:34:31.142+00:00 PASS cross-display change starts a fresh dwell with separate configuration
+2026-11-24T07:34:31.167+00:00 PASS Bottom edge triggers on the second display
+2026-11-24T07:34:31.194+00:00 PASS Right edge triggers on the second display
+2026-11-24T07:34:31.200+00:00 PASS outside start/end and offset stays hidden
+2026-11-24T07:34:31.202+00:00 PASS sampling gap clears previous dwell
+2026-11-24T07:34:31.228+00:00 PASS application block overrides ordinary window
+2026-11-24T07:34:31.230+00:00 PASS locked Windows session blocks even an application allow rule
+2026-11-24T07:34:31.234+00:00 PASS case-insensitive EXE allow rule overrides maximized policy
+2026-11-24T07:34:31.256+00:00 PASS pause suppresses an instant zone
+2026-11-24T07:34:31.261+00:00 PASS temporary keyboard action bypasses paused zones
+2026-11-24T07:34:31.268+00:00 PASS manual reveal grants time to reach the Dock
+2026-11-24T07:34:31.279+00:00 PASS temporary view expires after grace and leave delay
+2026-11-24T07:34:31.291+00:00 PASS locked view ignores prolonged leave
+2026-11-24T07:34:31.292+00:00 PASS unlock returns to ordinary auto-hide behavior
+2026-11-24T07:34:31.328+00:00 PASS manual show and hide toggle
+2026-11-24T07:34:31.351+00:00 PASS click within actual Dock bounds does not dismiss
+2026-11-24T07:34:31.432+00:00 PASS real WPF menu has an interaction rectangle [{'x': 1218, 'y': 1311, 'width': 155, 'height': 55}]
+2026-11-24T07:34:31.453+00:00 PASS staying over the actual menu prevents hide after leaving the Dock
+2026-11-24T07:34:31.456+00:00 PASS first Escape closes the open WPF menu
+2026-11-24T07:34:31.468+00:00 PASS second Escape dismisses the Dock []
+2026-11-24T07:34:31.499+00:00 PASS explicit outside click dismisses locked AutoHide
+2026-11-24T07:34:31.501+00:00 PASS resume re-enables hot zones
+2026-11-24T07:34:31.506+00:00 PASS duplicate chord rejected without writing 多个 Dock 操作使用了相同的全局快捷键。
+2026-11-24T07:34:31.535+00:00 PASS custom shortcut values persist
+2026-11-24T07:34:31.543+00:00 PASS default chord values restore
+2026-11-24T07:34:31.553+00:00 PASS native RegisterHotKey conflict and registration cleanup {"registered": true, "registerError": 0, "secondRegistered": false, "conflictError": 1409, "unregistered": true, "registeredAfterRelease": true, "registerAfterReleaseError": 0, "releasedAgain": true}
+2026-11-24T07:34:31.768+00:00 PASS real settings rendering for hotZones path=p2-settings-hotZones.png bytes=37873
+2026-11-24T07:34:31.832+00:00 PASS real settings rendering for shortcuts path=p2-settings-shortcuts.png bytes=36398
+2026-11-24T07:34:51.867+00:00 PERF elapsed=20.00s pointerSamples=426 foregroundReads=0 unintendedOpens=0 normalizedCpu=0.1674% workingSet=176.69MiB private=113.16MiB
+2026-11-24T07:34:51.867+00:00 PASS real cursor polling idle outside a small offscreen synthetic zone
+2026-11-24T07:34:52.818+00:00 PASS mode persists while temporary lock and pause clear after restart
+2026-11-24T07:34:52.819+00:00 PASS multi-zone, application rules, chords and legacy item are durable
+2026-11-24T07:34:52.868+00:00 END passed=49 failed=0

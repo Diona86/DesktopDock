@@ -40,6 +40,7 @@ public sealed record DockOptions
     public bool GlobalPositionLocked { get; init; }
     public bool DockPositionLocked { get; init; }
     public bool ShowDockOnStartup { get; init; } = true;
+    public DockBehaviorOptions Behavior { get; init; } = new();
 
     internal void Validate()
     {
@@ -54,6 +55,9 @@ public sealed record DockOptions
         if ((FloatingLeft is double left && !double.IsFinite(left)) ||
             (FloatingTop is double top && !double.IsFinite(top)))
             throw new ArgumentException("悬浮坐标必须为有限数值。");
+        if (Behavior is null)
+            throw new ArgumentException("Dock 行为设置无效。");
+        Behavior.Validate();
     }
 
     private static bool InRange(double value, double minimum, double maximum) =>

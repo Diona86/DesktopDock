@@ -12,15 +12,20 @@ public partial class SettingsWindow : Window
     private readonly Action<bool> setDockVisible;
     private readonly Action<DockItem> editItem;
     private readonly Action<DockItem> replaceIcon;
+    private readonly Func<IReadOnlyList<DockMonitor>> monitors;
+    private readonly Func<DockBehaviorOptions, string?> saveBehavior;
     private bool dockVisible;
 
     public SettingsWindow(DockSession session, bool dockVisible, Action<bool> setDockVisible,
-        Action<DockItem> editItem, Action<DockItem> replaceIcon)
+        Action<DockItem> editItem, Action<DockItem> replaceIcon,
+        Func<IReadOnlyList<DockMonitor>>? monitors = null, Func<DockBehaviorOptions, string?>? saveBehavior = null)
     {
         this.session = session;
         this.setDockVisible = setDockVisible;
         this.editItem = editItem;
         this.replaceIcon = replaceIcon;
+        this.monitors = monitors ?? (() => Array.Empty<DockMonitor>());
+        this.saveBehavior = saveBehavior ?? SaveBehaviorToSession;
         InitializeComponent();
         UpdateDockVisibility(dockVisible);
         RefreshItems();
@@ -37,6 +42,12 @@ public partial class SettingsWindow : Window
 
     internal void SelectPage(int index) => Navigation.SelectedIndex = index;
 
+    internal bool IsEditingShortcuts => Navigation.SelectedIndex == 5;
+
+    internal bool CaptureRegisteredHotkey(HotkeyChord chord) => IsActive && Navigation.SelectedIndex == 5 && HotkeysPage.Capture(chord);
+
+    internal void UpdateHotkeyRegistrationStatus(string? status) => HotkeysPage.ShowRegistrationStatus(status);
+
     private DockItem? SelectedItem => (ItemList.SelectedItem as ItemRow)?.Item;
 
     private void Navigate(object sender, SelectionChangedEventArgs e)
@@ -50,6 +61,8 @@ public partial class SettingsWindow : Window
         ItemsPage.Visibility = page == 1 ? Visibility.Visible : Visibility.Collapsed;
         PositionPage.Visibility = page == 2 ? Visibility.Visible : Visibility.Collapsed;
         GeneralPage.Visibility = page == 3 ? Visibility.Visible : Visibility.Collapsed;
+        BehaviorPage.Visibility = page == 4 ? Visibility.Visible : Visibility.Collapsed;
+        HotkeysPage.Visibility = page == 5 ? Visibility.Visible : Visibility.Collapsed;
         SaveButton.Visibility = page == 1 ? Visibility.Collapsed : Visibility.Visible;
         Status.Text = string.Empty;
         LoadPageOptions();
@@ -74,11 +87,23 @@ public partial class SettingsWindow : Window
                 StartupVisibilityInput.IsChecked = options.ShowDockOnStartup;
                 GlobalLockInput.IsChecked = options.GlobalPositionLocked;
                 break;
+            case 4:
+                BehaviorPage.LoadOptions(options.Behavior, options.Placement, monitors());
+                break;
+            case 5:
+                HotkeysPage.LoadOptions(options.Behavior.Hotkeys);
+                break;
         }
     }
 
     private void SaveOptions(object sender, RoutedEventArgs e)
     {
+        if (Navigation.SelectedIndex is 4 or 5)
+        {
+            ApplyBehaviorSettings();
+            return;
+        }
+
         TryChange("无法保存 Dock 设置", () =>
         {
             DockOptions options = session.Options;
@@ -106,6 +131,39 @@ public partial class SettingsWindow : Window
             session.UpdateOptions(options);
             Status.Text = "设置已保存。";
         });
+    }
+
+    private void ApplyBehaviorSettings()
+    {
+        bool editingBehavior = Navigation.SelectedIndex == 4;
+        try
+        {
+            DockBehaviorOptions current = session.Options.Behavior;
+            DockBehaviorOptions updated = editingBehavior ? BehaviorPage.ApplyTo(current) : current with { Hotkeys = HotkeysPage.Bindings };
+            updated.Validate();
+            string? error = saveBehavior(updated);
+            if (error != null)
+            {
+                Status.Text = error;
+                return;
+            }
+
+            if (editingBehavior)
+                BehaviorPage.MarkSaved();
+            else
+                HotkeysPage.MarkSaved();
+            Status.Text = "设置已保存。";
+        }
+        catch (Exception error) when (DockDialogs.IsUserFacing(error))
+        {
+            Status.Text = error.Message;
+        }
+    }
+
+    private string? SaveBehaviorToSession(DockBehaviorOptions options)
+    {
+        session.UpdateOptions(session.Options with { Behavior = options });
+        return null;
     }
 
     private static double ReadSize(TextBox field, string label)

@@ -10,6 +10,8 @@ public partial class App : Application
     private SettingsWindow? settings;
     private Forms.NotifyIcon? tray;
     private Forms.ToolStripMenuItem? visibilityMenu;
+    private Forms.ToolStripMenuItem? pauseZonesMenu;
+    private DockInteractionRuntime? interaction;
     private bool exiting;
     private bool validationMode;
 
@@ -34,7 +36,8 @@ public partial class App : Application
             };
             if (!validationMode)
                 CreateTray();
-            SetDockVisible(session.Options.ShowDockOnStartup);
+            interaction = new DockInteractionRuntime(dock, session, validationMode, RenderDockVisibility, CaptureShortcut);
+            UpdateTrayBehavior();
             if (showSettings)
                 ShowSettings();
             if (validationMode)
@@ -52,6 +55,7 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        interaction?.Dispose();
         if (tray != null)
         {
             tray.Visible = false;
@@ -95,6 +99,13 @@ public partial class App : Application
         visibilityMenu = new Forms.ToolStripMenuItem();
         visibilityMenu.Click += (_, _) => SetDockVisible(dock?.IsVisible != true);
         menu.Items.Add(visibilityMenu);
+        pauseZonesMenu = new Forms.ToolStripMenuItem("暂停热区");
+        pauseZonesMenu.Click += (_, _) =>
+        {
+            interaction?.Shortcut(DockHotkeyAction.Pause);
+            UpdateTrayBehavior();
+        };
+        menu.Items.Add(pauseZonesMenu);
         menu.Items.Add(new Forms.ToolStripSeparator());
         menu.Items.Add("退出", null, (_, _) => ExitApp(0));
         tray = new Forms.NotifyIcon
@@ -109,26 +120,47 @@ public partial class App : Application
 
     private void SetDockVisible(bool visible)
     {
+        interaction?.SetVisible(visible);
+    }
+
+    private void RenderDockVisibility(bool visible)
+    {
         if (dock == null)
             return;
         if (visible && !dock.IsVisible)
+        {
+            if (session?.Options.Behavior.Mode == DockMode.AutoHide)
+                dock.PrepareReveal();
             dock.Show();
+        }
         else if (!visible && dock.IsVisible)
             dock.Hide();
         if (visibilityMenu != null)
             visibilityMenu.Text = dock.IsVisible ? "隐藏 Dock" : "显示 Dock";
         settings?.UpdateDockVisibility(dock.IsVisible);
+        UpdateTrayBehavior();
+    }
+
+    private void UpdateTrayBehavior()
+    {
+        if (pauseZonesMenu == null)
+            return;
+        bool paused = interaction?.HotZonesPaused == true;
+        pauseZonesMenu.Checked = paused;
+        pauseZonesMenu.Text = paused ? "恢复热区" : "暂停热区";
     }
 
     private void ShowSettings()
     {
         if (settings == null)
         {
-            settings = new SettingsWindow(session!, dock?.IsVisible == true, SetDockVisible, EditItem, ReplaceIcon)
+            settings = new SettingsWindow(session!, dock?.IsVisible == true, SetDockVisible, EditItem, ReplaceIcon,
+                interaction!.ReadMonitors, SaveBehavior)
             {
                 ShowActivated = !validationMode
             };
             settings.Closed += (_, _) => settings = null;
+            settings.UpdateHotkeyRegistrationStatus(interaction.HotkeyStatus);
             settings.Show();
         }
         if (settings.WindowState == WindowState.Minimized)
@@ -145,13 +177,37 @@ public partial class App : Application
 
     private Window? DialogOwner => settings?.IsActive == true ? settings : dock?.IsVisible == true ? dock : settings;
 
+    private string? SaveBehavior(DockBehaviorOptions options)
+    {
+        string? error = interaction!.Apply(options, settings?.IsEditingShortcuts == true);
+        settings?.UpdateHotkeyRegistrationStatus(interaction.HotkeyStatus);
+        return error;
+    }
+
+    private bool CaptureShortcut(DockHotkeyAction action)
+    {
+        DockHotkeys bindings = session!.Options.Behavior.Hotkeys;
+        HotkeyChord? chord = action switch
+        {
+            DockHotkeyAction.Toggle => bindings.Toggle,
+            DockHotkeyAction.Peek => bindings.Peek,
+            DockHotkeyAction.Lock => bindings.Lock,
+            _ => bindings.Pause
+        };
+        return chord != null && settings?.CaptureRegisteredHotkey(chord) == true;
+    }
+
     private void EditItem(DockItem item)
     {
-        DockDialogs.Edit(DialogOwner, session!, item);
+        interaction?.SetModalInteraction(true);
+        try { DockDialogs.Edit(DialogOwner, session!, item); }
+        finally { interaction?.SetModalInteraction(false); }
     }
 
     private void ReplaceIcon(DockItem item)
     {
-        DockDialogs.ReplaceIcon(DialogOwner, session!, item);
+        interaction?.SetModalInteraction(true);
+        try { DockDialogs.ReplaceIcon(DialogOwner, session!, item); }
+        finally { interaction?.SetModalInteraction(false); }
     }
 }
