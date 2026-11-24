@@ -1,0 +1,157 @@
+using System.Windows;
+using Forms = System.Windows.Forms;
+
+namespace DesktopDock;
+
+public partial class App : Application
+{
+    private DockSession? session;
+    private DockWindow? dock;
+    private SettingsWindow? settings;
+    private Forms.NotifyIcon? tray;
+    private Forms.ToolStripMenuItem? visibilityMenu;
+    private bool exiting;
+    private bool validationMode;
+
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        base.OnStartup(e);
+        validationMode = e.Args.Contains("--mcp-stdio", StringComparer.Ordinal);
+        try
+        {
+            (string directory, bool showSettings) = ReadOptions(e.Args);
+            if (validationMode && (!Console.IsInputRedirected || !Console.IsOutputRedirected))
+                throw new ArgumentException("MCP 模式需要重定向 stdin 和 stdout。");
+            session = DockSession.Open(directory);
+            dock = new DockWindow(session, new DockIconService(), ShowSettings, EditItem, ReplaceIcon, () => SetDockVisible(false));
+            MainWindow = dock;
+            dock.Closing += (_, args) =>
+            {
+                if (exiting)
+                    return;
+                args.Cancel = true;
+                Dispatcher.BeginInvoke(() => SetDockVisible(false));
+            };
+            if (!validationMode)
+                CreateTray();
+            SetDockVisible(session.Options.ShowDockOnStartup);
+            if (showSettings)
+                ShowSettings();
+            if (validationMode)
+                _ = RunMcp();
+        }
+        catch (Exception exception) when (DockDialogs.IsUserFacing(exception))
+        {
+            if (validationMode)
+                WriteMcpError(exception);
+            else
+                DockDialogs.Error(null, "无法启动 Desktop Dock", exception);
+            ExitApp(1);
+        }
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        if (tray != null)
+        {
+            tray.Visible = false;
+            tray.ContextMenuStrip?.Dispose();
+            tray.Dispose();
+        }
+        session?.Dispose();
+        base.OnExit(e);
+    }
+
+    private (string Directory, bool ShowSettings) ReadOptions(string[] args)
+    {
+        string defaultDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DesktopDock", "config");
+        string directory = defaultDirectory;
+        bool settings = false;
+        for (int index = 0; index < args.Length; index++)
+        {
+            switch (args[index])
+            {
+                case "--config-dir" when index + 1 < args.Length && Path.IsPathFullyQualified(args[index + 1]):
+                    directory = args[++index];
+                    break;
+                case "--settings":
+                    settings = true;
+                    break;
+                case "--mcp-stdio":
+                    break;
+                default:
+                    throw new ArgumentException("启动选项无效。可使用 --config-dir <绝对路径>、--settings 和 --mcp-stdio。");
+            }
+        }
+        if (validationMode && string.Equals(Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory)), defaultDirectory, StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException("MCP 模式需要使用 --config-dir 指定独立的测试配置目录。");
+        return (directory, settings);
+    }
+
+    private void CreateTray()
+    {
+        var menu = new Forms.ContextMenuStrip();
+        menu.Items.Add("设置", null, (_, _) => ShowSettings());
+        visibilityMenu = new Forms.ToolStripMenuItem();
+        visibilityMenu.Click += (_, _) => SetDockVisible(dock?.IsVisible != true);
+        menu.Items.Add(visibilityMenu);
+        menu.Items.Add(new Forms.ToolStripSeparator());
+        menu.Items.Add("退出", null, (_, _) => ExitApp(0));
+        tray = new Forms.NotifyIcon
+        {
+            Text = "Desktop Dock",
+            Icon = System.Drawing.SystemIcons.Application,
+            ContextMenuStrip = menu,
+            Visible = true
+        };
+        tray.DoubleClick += (_, _) => ShowSettings();
+    }
+
+    private void SetDockVisible(bool visible)
+    {
+        if (dock == null)
+            return;
+        if (visible && !dock.IsVisible)
+            dock.Show();
+        else if (!visible && dock.IsVisible)
+            dock.Hide();
+        if (visibilityMenu != null)
+            visibilityMenu.Text = dock.IsVisible ? "隐藏 Dock" : "显示 Dock";
+        settings?.UpdateDockVisibility(dock.IsVisible);
+    }
+
+    private void ShowSettings()
+    {
+        if (settings == null)
+        {
+            settings = new SettingsWindow(session!, dock?.IsVisible == true, SetDockVisible, EditItem, ReplaceIcon)
+            {
+                ShowActivated = !validationMode
+            };
+            settings.Closed += (_, _) => settings = null;
+            settings.Show();
+        }
+        if (settings.WindowState == WindowState.Minimized)
+            settings.WindowState = WindowState.Normal;
+        if (!validationMode)
+            settings.Activate();
+    }
+
+    private void ExitApp(int code)
+    {
+        exiting = true;
+        Shutdown(code);
+    }
+
+    private Window? DialogOwner => settings?.IsActive == true ? settings : dock?.IsVisible == true ? dock : settings;
+
+    private void EditItem(DockItem item)
+    {
+        DockDialogs.Edit(DialogOwner, session!, item);
+    }
+
+    private void ReplaceIcon(DockItem item)
+    {
+        DockDialogs.ReplaceIcon(DialogOwner, session!, item);
+    }
+}

@@ -1,2 +1,7 @@
 /prototypes/**/bin/
 /prototypes/**/obj/
+/src/**/bin/
+/src/**/obj/
+/tests/**/bin/
+/tests/**/obj/
+/artifacts/

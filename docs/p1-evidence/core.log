@@ -1,0 +1,44 @@
+Windows 11 / .NET 10 isolated core checks (temporary project linked production source)
+SDK 10.0.404
+dotnet build Marker.csproj -c Release --disable-build-servers -p:NuGetAudit=false --ignore-failed-sources
+dotnet build CoreProbe.csproj -c Release --disable-build-servers -p:NuGetAudit=false --ignore-failed-sources
+CoreProbe.exe <temporary scenario> <fixture apphost> <test .lnk or ->
+Production-linked CoreProbe build: 0 warnings, 0 errors.
+Temporary Marker fixture build: 1 nullable annotation warning (CS8632), 0 errors.
+The probe calls the production session and launch APIs. It does not exercise WPF controls or observe the default browser.
+PASS new-empty-profile
+PASS exclusive-profile
+PASS accept-exe
+PASS accept-file-and-unicode
+PASS accept-folder
+PASS accept-https
+PASS reject-non-http
+PASS reject-relative-path
+PASS reject-missing-path
+PASS reject-impossible-icon-thickness
+PASS reorder
+PASS edit-name-and-icon
+PASS config-schema-v1
+PASS atomic-replace-conflict
+PASS failed-write-kept-disk-and-memory
+PASS real-exe-launch-and-working-directory
+PASS accept-lnk-as-reference
+PASS real-lnk-launch-arguments-and-working-directory
+PASS reopen-restores-options-and-item-order
+PASS remove-only-reference
+PASS missing-target-launch-rejected
+PASS load-retains-stale-reference
+PASS repair-stale-reference
+PASS refuse-future-config
+PASS future-config-not-rewritten
+PASS refuse-corrupt-config
+PASS corrupt-config-not-rewritten
+coreProcessExitCode=0
+
+Follow-up after guarding temporary-file cleanup:
+AtomicProbe build: 0 warnings, 0 errors.
+PASS atomic-follow-up-sharing-conflict
+PASS atomic-follow-up-original-disk-and-memory
+PASS atomic-follow-up-temp-file-cleanup
+PASS atomic-follow-up-subsequent-write
+atomicProbeExitCode=0

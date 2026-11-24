@@ -1,0 +1,129 @@
+<Window x:Class="DesktopDock.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Desktop Dock 设置" Width="920" Height="590" MinWidth="680" MinHeight="470"
+        WindowStartupLocation="CenterScreen" FontFamily="Segoe UI, Microsoft YaHei UI" FontSize="14"
+        UseLayoutRounding="True">
+    <Window.Resources><ResourceDictionary Source="SettingsStyles.xaml" /></Window.Resources>
+    <Grid Background="{StaticResource Canvas}" TextElement.Foreground="{StaticResource Ink}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="184" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Background="{StaticResource Sidebar}" BorderBrush="{StaticResource Rule}" BorderThickness="0,0,1,0">
+            <DockPanel Margin="17,28,17,20" LastChildFill="True">
+                <TextBlock DockPanel.Dock="Top" Margin="9,0,0,25" Text="Desktop Dock" FontSize="19" FontWeight="SemiBold" />
+                <ListBox x:Name="Navigation" AutomationProperties.Name="设置分类" SelectionChanged="Navigate"
+                         BorderThickness="0" Background="Transparent" ItemContainerStyle="{StaticResource NavItem}">
+                    <ListBoxItem Content="Dock 外观" />
+                    <ListBoxItem Content="项目管理" />
+                    <ListBoxItem Content="Dock 位置" />
+                    <ListBoxItem Content="通用设置" />
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <Grid Grid.Column="1" Margin="30,26,30,21">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <DockPanel LastChildFill="True" Margin="0,0,0,24">
+                <Button DockPanel.Dock="Right" x:Name="VisibilityButton" Content="隐藏 Dock" Click="ToggleDock"
+                        VerticalAlignment="Center" Margin="12,0,0,0" />
+                <TextBlock x:Name="PageTitle" FontSize="29" FontWeight="SemiBold" VerticalAlignment="Center" />
+            </DockPanel>
+
+            <Grid Grid.Row="1">
+                <ScrollViewer x:Name="AppearancePage" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel MaxWidth="470" HorizontalAlignment="Left">
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="图标尺寸" />
+                        <TextBox x:Name="IconSizeInput" AutomationProperties.Name="图标尺寸" Width="130" HorizontalAlignment="Left" />
+                        <TextBlock Style="{StaticResource FieldHint}" Margin="0,6,0,22" Text="16–96 DIP" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="Dock 厚度" />
+                        <TextBox x:Name="DockThicknessInput" AutomationProperties.Name="Dock 厚度" Width="130" HorizontalAlignment="Left" />
+                        <TextBlock Style="{StaticResource FieldHint}" Margin="0,6,0,22" Text="32–168 DIP，至少比图标尺寸大 10 DIP" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="Dock 长度" />
+                        <TextBox x:Name="DockLengthInput" AutomationProperties.Name="Dock 长度" Width="130" HorizontalAlignment="Left" />
+                        <TextBlock Style="{StaticResource FieldHint}" Margin="0,6,0,10" Text="0 为自动；也可输入 80–4096 DIP。Dock 会适配屏幕工作区。" />
+                    </StackPanel>
+                </ScrollViewer>
+
+                <Grid x:Name="ItemsPage" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <WrapPanel Margin="0,0,0,12">
+                        <Button Style="{StaticResource PrimaryButton}" Content="添加文件" Click="AddFiles" Margin="0,0,8,5" />
+                        <Button Content="添加文件夹" Click="AddFolders" Margin="0,0,8,5" />
+                        <Button Content="添加网址" Click="AddUrl" Margin="0,0,0,5" />
+                    </WrapPanel>
+                    <Border Grid.Row="1" BorderBrush="{StaticResource Rule}" BorderThickness="1" CornerRadius="5" Background="White">
+                        <Grid>
+                            <ListView x:Name="ItemList" AutomationProperties.Name="Dock 项目" BorderThickness="0"
+                                      SelectionMode="Single" Padding="1" Background="Transparent" Foreground="{StaticResource Ink}" SelectionChanged="SelectItem"
+                                      MouseDoubleClick="EditSelectedOnDoubleClick">
+                                <ListView.View>
+                                    <GridView AllowsColumnReorder="False">
+                                        <GridViewColumn Header="名称" Width="156" DisplayMemberBinding="{Binding Name}" />
+                                        <GridViewColumn Header="类型" Width="77" DisplayMemberBinding="{Binding KindLabel}" />
+                                        <GridViewColumn Header="目标" Width="350">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Target}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Target}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                            <TextBlock x:Name="EmptyItems" Margin="15,42,15,0" HorizontalAlignment="Center" VerticalAlignment="Top"
+                                       Style="{StaticResource FieldHint}" Text="从上方添加，或将文件从资源管理器拖到 Dock。"
+                                       IsHitTestVisible="False" />
+                        </Grid>
+                    </Border>
+                    <WrapPanel Grid.Row="2" Margin="0,12,0,0">
+                        <Button x:Name="EditButton" Content="编辑" Click="EditSelected" Margin="0,0,8,0" />
+                        <Button x:Name="ReplaceIconButton" Content="替换图标" Click="ReplaceSelectedIcon" Margin="0,0,8,0" />
+                        <Button x:Name="RemoveButton" Content="移除引用" Click="RemoveSelected" />
+                    </WrapPanel>
+                </Grid>
+
+                <ScrollViewer x:Name="PositionPage" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                    <StackPanel MaxWidth="470" HorizontalAlignment="Left">
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="停靠位置" />
+                        <ComboBox x:Name="PlacementInput" AutomationProperties.Name="停靠位置" Width="170" Height="34"
+                                  HorizontalAlignment="Left" VerticalContentAlignment="Center" SelectionChanged="PlacementChanged">
+                            <ComboBoxItem Content="屏幕底部" />
+                            <ComboBoxItem Content="屏幕顶部" />
+                            <ComboBoxItem Content="屏幕左侧" />
+                            <ComboBoxItem Content="屏幕右侧" />
+                            <ComboBoxItem Content="自由悬浮" />
+                        </ComboBox>
+                        <CheckBox x:Name="FloatingVerticalInput" Content="悬浮时纵向排列" Margin="0,12,0,0" />
+                        <Separator Margin="0,20,0,15" Background="{StaticResource Rule}" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="移动与锁定" />
+                        <CheckBox x:Name="DockLockInput" Margin="0,6,0,12" Content="锁定当前 Dock 位置" />
+                        <TextBlock Style="{StaticResource FieldHint}" Text="将鼠标移到 Dock 的留白处即可显示移动手柄。" />
+                    </StackPanel>
+                </ScrollViewer>
+
+                <StackPanel x:Name="GeneralPage" Visibility="Collapsed" MaxWidth="460" HorizontalAlignment="Left">
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="显示与位置" />
+                    <CheckBox x:Name="StartupVisibilityInput" Content="启动 Desktop Dock 时显示 Dock" Margin="0,9,0,13" />
+                    <CheckBox x:Name="GlobalLockInput" Content="全局锁定 Dock 位置" Margin="0,0,0,13" />
+                    <TextBlock Style="{StaticResource FieldHint}" Text="关闭设置窗口后，Dock 会继续运行。可通过通知区域显示 Dock 或退出。" />
+                </StackPanel>
+            </Grid>
+
+            <DockPanel Grid.Row="2" LastChildFill="True" Margin="0,16,0,0">
+                <Button DockPanel.Dock="Right" x:Name="SaveButton" Style="{StaticResource PrimaryButton}" Content="保存设置" Click="SaveOptions" Margin="8,0,0,0" />
+                <TextBlock x:Name="Status" AutomationProperties.LiveSetting="Polite" Style="{StaticResource FieldHint}" VerticalAlignment="Center" />
+            </DockPanel>
+        </Grid>
+    </Grid>
+</Window>

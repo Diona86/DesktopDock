@@ -1,0 +1,19 @@
+Desktop Dock P1 isolated Windows icon verification
+Windows 11 25H2, x64. Microsoft .NET SDK 10.0.404, Desktop Runtime 10.0.15.
+Built temporary net10.0-windows WPF console harness with workspace DockIconService.cs and DockModels.cs.
+Fixtures: Windows System32 notepad.exe; WScript.Shell .lnk targeting that EXE and using shell32.dll icon index 3; a text file; a directory; a URL; a 2x2 PNG whose alpha values are 255, 0, 128, 0; a missing PNG path.
+No target was opened. Icon extraction did not request a favicon. This harness probes returned ImageSource pixels and references; it does not exercise Dock rendering or tooltip interactions.
+
+Release build: 0 warnings, 0 errors.
+Application: CachedBitmap, 64x64, alpha(transparent=1583, partial=732, opaque=1781), frozen=True cacheHit=True
+Shortcut: CachedBitmap, 64x64, alpha(transparent=1779, partial=132, opaque=2185), frozen=True cacheHit=True
+File: CachedBitmap, 64x64, alpha(transparent=1799, partial=79, opaque=2218), frozen=True cacheHit=True
+Folder: CachedBitmap, 64x64, alpha(transparent=1779, partial=132, opaque=2185), frozen=True cacheHit=True
+Url: DrawingImage, x, alpha(n/a), frozen=True cacheHit=True
+Custom image: 2x2, alpha(transparent=2, partial=1, opaque=1), frozen=True
+Custom metadata invalidation=True
+Missing override fallback=DrawingImage
+Distinct native icon hashes=3
+processExitCode=0
+
+The shortcut icon and its EXE target had different pixel distributions. The test shortcut deliberately used a folder-style Shell icon instead of its target icon.
