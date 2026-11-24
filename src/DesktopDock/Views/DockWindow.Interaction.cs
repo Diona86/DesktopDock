@@ -43,12 +43,23 @@ public partial class DockWindow
         if (dockBounds.Contains(point))
             return true;
 
+        double groupGap = Math.Max(64, session.Options.Layout.PanelSpacing * GetDockWorkArea().Scale + 4);
+        Rect previous = dockBounds;
+        Rect[] panels = GroupPanelBounds();
+        foreach (Rect panelBounds in panels)
+        {
+            if (panelBounds.Contains(point) || (!forClick && Bridges(point, previous, panelBounds, groupGap)))
+                return true;
+            previous = panelBounds;
+        }
+
         foreach (ContextMenu menu in openMenus)
         {
             if (!menu.IsOpen || !TryGetMenuBounds(menu, out Rect bounds))
                 continue;
             lastMenuBounds = bounds;
-            if (bounds.Contains(point) || (!forClick && Bridges(point, dockBounds, bounds)))
+            if (bounds.Contains(point) || (!forClick && (Bridges(point, dockBounds, bounds)
+                || panels.Any(panel => Bridges(point, panel, bounds, groupGap)))))
                 return true;
         }
 
@@ -68,7 +79,7 @@ public partial class DockWindow
             menu.IsOpen = false;
             return true;
         }
-        return false;
+        return CloseTopGroup();
     }
 
     internal void OpenMenuForTest()
@@ -131,7 +142,7 @@ public partial class DockWindow
         return DockWindowPosition.TryGetBounds(handle, out bounds);
     }
 
-    private static bool Bridges(Point point, Rect a, Rect b)
+    private static bool Bridges(Point point, Rect a, Rect b, double maxGap = 64)
     {
         if (a.IsEmpty || b.IsEmpty)
             return false;
@@ -139,13 +150,13 @@ public partial class DockWindow
         // Protect only the short corridor between facing, overlapping edges.
         double x1 = Math.Max(a.Left, b.Left), x2 = Math.Min(a.Right, b.Right);
         double y1 = Math.Min(a.Bottom, b.Bottom), y2 = Math.Max(a.Top, b.Top);
-        if (x1 <= x2 && y2 - y1 is >= 0 and <= 64 && point.X >= x1 && point.X <= x2 && point.Y >= y1 && point.Y <= y2)
+        if (x1 <= x2 && y2 >= y1 && y2 - y1 <= maxGap && point.X >= x1 && point.X <= x2 && point.Y >= y1 && point.Y <= y2)
             return true;
 
         y1 = Math.Max(a.Top, b.Top);
         y2 = Math.Min(a.Bottom, b.Bottom);
         x1 = Math.Min(a.Right, b.Right);
         x2 = Math.Max(a.Left, b.Left);
-        return y1 <= y2 && x2 - x1 is >= 0 and <= 64 && point.Y >= y1 && point.Y <= y2 && point.X >= x1 && point.X <= x2;
+        return y1 <= y2 && x2 >= x1 && x2 - x1 <= maxGap && point.Y >= y1 && point.Y <= y2 && point.X >= x1 && point.X <= x2;
     }
 }

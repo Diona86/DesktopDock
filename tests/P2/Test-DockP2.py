@@ -226,7 +226,7 @@ def native_process_sample(process_id):
         kernel.CloseHandle(handle)
 
 
-def exercise(executable, run_directory, checks, idle_seconds):
+def exercise(executable, run_directory, checks, idle_seconds, expected_schema_version=2):
     profile = run_directory / "profile"
     profile.mkdir()
     config_file = profile / "dock.json"
@@ -266,8 +266,8 @@ def exercise(executable, run_directory, checks, idle_seconds):
                      "AutoHide hides both the WPF view and its HWND")
         backups = list(profile.glob("dock.v1-*.bak"))
         config = json.loads(config_file.read_text(encoding="utf-8"))
-        checks.check(config["schemaVersion"] == 2 and len(backups) == 1 and backups[0].read_bytes() == initial_bytes,
-                     "atomic v1 to v2 backup byte equality", f"sha256={digest(initial_bytes)}")
+        checks.check(config["schemaVersion"] == expected_schema_version and len(backups) == 1 and backups[0].read_bytes() == initial_bytes,
+                     f"atomic v1 to v{expected_schema_version} backup byte equality", f"sha256={digest(initial_bytes)}")
 
         resolved = client.data("dock_p2_monitors")["zones"]
         which_zone = {entry["zone"]["id"]: entry for entry in resolved}
@@ -465,6 +465,7 @@ def main():
     parser.add_argument("--executable", type=Path, default=ROOT / "artifacts/DesktopDock-P2-win-x64/DesktopDock.exe")
     parser.add_argument("--run-directory", type=Path, default=ROOT / "artifacts" / f"p2-mcp-{uuid.uuid4().hex}")
     parser.add_argument("--idle-seconds", type=float, default=22)
+    parser.add_argument("--expected-schema-version", type=int, default=2)
     args = parser.parse_args()
     if not 20 <= args.idle_seconds <= 30:
         parser.error("--idle-seconds must be between 20 and 30 for the idle sample")
@@ -474,7 +475,7 @@ def main():
     checks = Checks(run_directory / "mcp-results.log")
     checks.log(f"START exe={executable} directory={run_directory}")
     try:
-        exercise(executable, run_directory, checks, args.idle_seconds)
+        exercise(executable, run_directory, checks, args.idle_seconds, args.expected_schema_version)
     except (AssertionError, RuntimeError, OSError, ValueError, KeyError, TypeError) as error:
         checks.log(f"FAIL {error}")
         checks.log(f"END passed={checks.passed} failed=1")

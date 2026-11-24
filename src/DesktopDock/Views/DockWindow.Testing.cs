@@ -15,6 +15,9 @@ public partial class DockWindow
             visible = IsVisible,
             nativeVisible = DockWindowPosition.IsNativeVisible(this),
             interactionMenus = InteractionMenuBounds(),
+            layout = new { mode = session.Options.Layout.Mode, rows = ItemStrip.Rows, columns = ItemStrip.Columns,
+                visibleLength = vertical ? Viewport.ActualHeight : Viewport.ActualWidth,
+                scrolling = ItemScroll.ScrollableWidth > 0 || ItemScroll.ScrollableHeight > 0 },
             transparent = AllowsTransparency,
             background = Background?.ToString(),
             surfaceBackground = Surface.Background?.ToString(),
@@ -66,7 +69,7 @@ public partial class DockWindow
         Point pointer = target.TranslatePoint(offset, Viewport);
         try
         {
-            bool feedback = ShowItemDropFeedback(pointer) && DropIndicator.IsVisible;
+            bool feedback = ShowItemDropFeedback(pointer, sourceId) && DropIndicator.IsVisible;
             bool committed = CommitItemDrop(sourceId, pointer);
             Guid[] orderAfter = RenderedItemIds();
             return new
@@ -83,6 +86,27 @@ public partial class DockWindow
         {
             HideDropIndicator();
         }
+    }
+
+    internal object TestRootEntryDrop(Guid source, Guid? target, bool after, bool center)
+    {
+        RequireVisibleDock();
+        if (target is not Guid targetId)
+            return new { committed = CommitEntryDrop(source, null, null, after, center), feedback = false };
+
+        Button button = RequireItemButton(targetId);
+        button.BringIntoView();
+        UpdateLayout();
+        double fraction = center ? .5 : after ? .8 : .2;
+        Point offset = vertical ? new Point(button.ActualWidth / 2, button.ActualHeight * fraction)
+            : new Point(button.ActualWidth * fraction, button.ActualHeight / 2);
+        Point pointer = button.TranslatePoint(offset, Viewport);
+        try
+        {
+            bool feedback = ShowItemDropFeedback(pointer, source) && DropIndicator.IsVisible;
+            return new { committed = CommitItemDrop(source, pointer), feedback };
+        }
+        finally { HideDropIndicator(); }
     }
 
     internal object TestDragHandle(double dx, double dy)

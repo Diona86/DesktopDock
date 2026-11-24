@@ -67,7 +67,7 @@
                 <ScrollViewer x:Name="ItemScroll" HorizontalScrollBarVisibility="Hidden"
                               VerticalScrollBarVisibility="Disabled" PanningMode="None"
                               Focusable="False" Background="Transparent">
-                    <StackPanel x:Name="ItemStrip" Orientation="Horizontal"/>
+                    <UniformGrid x:Name="ItemStrip" Rows="1"/>
                 </ScrollViewer>
                 <Canvas IsHitTestVisible="False">
                     <Border x:Name="DropIndicator" Visibility="Collapsed" Background="{StaticResource DockAccent}"

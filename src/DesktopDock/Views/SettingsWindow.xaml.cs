@@ -63,6 +63,7 @@ public partial class SettingsWindow : Window
         GeneralPage.Visibility = page == 3 ? Visibility.Visible : Visibility.Collapsed;
         BehaviorPage.Visibility = page == 4 ? Visibility.Visible : Visibility.Collapsed;
         HotkeysPage.Visibility = page == 5 ? Visibility.Visible : Visibility.Collapsed;
+        LayoutPage.Visibility = page == 6 ? Visibility.Visible : Visibility.Collapsed;
         SaveButton.Visibility = page == 1 ? Visibility.Collapsed : Visibility.Visible;
         Status.Text = string.Empty;
         LoadPageOptions();
@@ -92,6 +93,9 @@ public partial class SettingsWindow : Window
                 break;
             case 5:
                 HotkeysPage.LoadOptions(options.Behavior.Hotkeys);
+                break;
+            case 6:
+                LayoutPage.LoadOptions(session);
                 break;
         }
     }
@@ -126,6 +130,7 @@ public partial class SettingsWindow : Window
                     ShowDockOnStartup = StartupVisibilityInput.IsChecked == true,
                     GlobalPositionLocked = GlobalLockInput.IsChecked == true
                 },
+                6 => options with { Layout = LayoutPage.ReadOptions(options.Layout) },
                 _ => options
             };
             session.UpdateOptions(options);
@@ -227,7 +232,12 @@ public partial class SettingsWindow : Window
             DockDialogs.Error(this, "部分项目无法添加", new ArgumentException(string.Join(Environment.NewLine, errors.Take(4))));
     }
 
-    private void SessionChanged(object? sender, EventArgs e) => RefreshItems();
+    private void SessionChanged(object? sender, EventArgs e)
+    {
+        RefreshItems();
+        if (Navigation.SelectedIndex == 6)
+            LayoutPage.RefreshGroups();
+    }
 
     private void RefreshItems()
     {

@@ -1,0 +1,9 @@
+Focused P3 WPF panel integration via MCP on local Windows, 2026-11-24.
+Release isolated build: 0 warnings, 0 errors, exit 0.
+Generated test profile with one parent, one child and six URL references. No URL was launched.
+OPEN {"groupId": "3dee345d-217d-4474-947f-27fbc5523f85", "name": "Design System", "expandMode": "Fan", "direction": "Up", "actualDirection": "Up", "bounds": {"x": 1141, "y": 1226, "width": 268, "height": 132}, "animationMilliseconds": 170, "animationActive": true, "opacity": 1, "nativeVisible": true, "activatesOnShow": false, "entries": [{"id": "5e0e0ea6-6362-4315-bba1-168c171cdd1a", "bounds": {"x": 10, "y": 73, "width": 48, "height": 48}}, {"id": "7d69d8d6-ee01-4dfe-82d6-840c3520fe82", "bounds": {"x": 60, "y": 52, "width": 48, "height": 48}}, {"id": "3e3185ba-668e-4840-b335-c8bffe545dab", "bounds": {"x": 110, "y": 49, "width": 48, "height": 48}}, {"id": "c4864693-20d0-43f8-9228-e3123b041fa5", "bounds": {"x": 160, "y": 52, "width": 48, "height": 48}}, {"id": "14930548-21e2-4ac5-81ad-c5e83ca04c60", "bounds": {"x": 210, "y": 73, "width": 48, "height": 48}}]}
+SETTLED OPACITY 1 animationActive False
+CAPTURE 6645 artifacts/p3-panel-inspection-741b0a9fa5d74083bf3eacf7df8b412c/fan.png
+DEPTH 2 [{"x": 1141, "y": 1226, "width": 268, "height": 132}, {"x": 1417, "y": 1269, "width": 182, "height": 108}]
+PASS separate panel capture, real native direction, distinct fan coordinates and Escape levels
+The own-window PNG was visually inspected. Escape and opening were exercised through the app MCP; external OLE and physical mouse/keyboard actions were not used.

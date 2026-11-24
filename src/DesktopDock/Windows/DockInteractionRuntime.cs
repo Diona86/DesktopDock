@@ -53,6 +53,8 @@ internal sealed class DockInteractionRuntime : IDisposable
         timer.Tick += SampleNative;
         outsideClicks = new DockOutsideClickMonitor((x, y) => OutsideClick(x, y));
         dock.EscapeRequested = HandleEscape;
+        dock.ModalInteractionRequested = SetModalInteraction;
+        dock.GroupPanelsChanged += UpdateObservation;
         session.Changed += OptionsChanged;
         RebuildZones();
 
@@ -145,10 +147,12 @@ internal sealed class DockInteractionRuntime : IDisposable
 
     internal bool OutsideClick(int x, int y)
     {
-        if (!Dismissible || modalInteraction || dock.ContainsInteraction(x, y, forClick: true))
+        if ((!Dismissible && !dock.HasGroupPanels) || modalInteraction || dock.ContainsInteraction(x, y, forClick: true))
             return false;
         dock.CloseInteractionMenus();
-        visibility.Dismiss();
+        dock.CloseGroups();
+        if (Dismissible)
+            visibility.Dismiss();
         Publish();
         return true;
     }
@@ -156,9 +160,11 @@ internal sealed class DockInteractionRuntime : IDisposable
     internal bool HandleEscape()
     {
         escapeDown = true;
+        if (modalInteraction)
+            return false;
         if (dock.CloseTopInteraction())
             return true;
-        if (!Dismissible || modalInteraction)
+        if (!Dismissible)
             return false;
         visibility.Dismiss();
         Publish();
@@ -275,7 +281,7 @@ internal sealed class DockInteractionRuntime : IDisposable
             }
         }
 
-        if (Dismissible)
+        if (Dismissible || dock.HasGroupPanels)
         {
             bool escape = DockWindows.IsVirtualKeyDown(0x1B);
             if (escape && !escapeDown)
@@ -352,8 +358,12 @@ internal sealed class DockInteractionRuntime : IDisposable
             dock.Topmost = false;
         }
         render(visibility.IsVisible);
+        UpdateObservation();
+    }
 
-        bool wantOutside = NativeSampling && Dismissible;
+    private void UpdateObservation()
+    {
+        bool wantOutside = NativeSampling && (Dismissible || dock.HasGroupPanels);
         if (outsideRequested != wantOutside)
         {
             outsideRequested = wantOutside;
@@ -370,7 +380,7 @@ internal sealed class DockInteractionRuntime : IDisposable
             }
         }
 
-        bool wantTimer = NativeSampling && (visibility.State == DockVisibilityState.Temporary ||
+        bool wantTimer = NativeSampling && (dock.HasGroupPanels || visibility.State == DockVisibilityState.Temporary ||
             visibility.Mode == DockMode.AutoHide && (!visibility.HotZonesPaused || visibility.IsVisible));
         if (wantTimer && !timer.IsEnabled)
             timer.Start();
@@ -387,6 +397,7 @@ internal sealed class DockInteractionRuntime : IDisposable
     public void Dispose()
     {
         session.Changed -= OptionsChanged;
+        dock.GroupPanelsChanged -= UpdateObservation;
         timer.Stop();
         outsideClicks.Dispose();
         hotkeys?.Dispose();

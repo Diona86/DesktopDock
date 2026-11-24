@@ -29,6 +29,8 @@ public partial class DockWindow : Window
     private Point pressPoint;
     private Guid? draggingItem;
     private bool vertical;
+    private int layoutTracks = 1;
+    private bool groupExpandLayout;
     private long lastDragScroll;
     private DispatcherOperation? placement;
     private DispatcherOperation? dpiRefresh;
@@ -51,9 +53,15 @@ public partial class DockWindow : Window
 
         SettingsButton.Click += (_, _) => showSettings();
         Surface.ContextMenu = TrackInteractionMenu(new ContextMenu());
+        Surface.ContextMenu.Items.Add(CreateMenuItem("创建分组", () => RunGroupDialog(() => DockGroupDialogs.Create(this, session, null))));
         Surface.ContextMenu.Items.Add(CreateMenuItem("打开设置", showSettings));
         Surface.ContextMenu.Items.Add(CreateMenuItem("隐藏 Dock", requestHide));
         Surface.PreviewMouseMove += (_, e) => UpdateGrip(e.OriginalSource as DependencyObject);
+        Surface.PreviewMouseLeftButtonDown += (_, e) =>
+        {
+            if (HasGroupPanels && !HasButtonAncestor(e.OriginalSource as DependencyObject))
+                CloseGroups();
+        };
         Surface.MouseLeave += (_, _) => UpdateGrip(null, false);
         PreviewKeyDown += PreviewInteractionKey;
         MoveHandle.PreviewMouseLeftButtonDown += BeginMove;
@@ -71,17 +79,22 @@ public partial class DockWindow : Window
         IsVisibleChanged += (_, _) =>
         {
             if (IsVisible)
+            {
                 QueuePlacement();
+                QueueGroupLayoutOpen();
+            }
             else
             {
                 UpdateGrip(null, false);
                 CloseInteractionMenus();
+                CloseGroups();
             }
         };
         session.Changed += SessionChanged;
         Closed += (_, _) =>
         {
             session.Changed -= SessionChanged;
+            CloseGroups();
             CancelIconLoads();
             placement?.Abort();
             dpiRefresh?.Abort();
@@ -91,7 +104,11 @@ public partial class DockWindow : Window
 
     private bool PositionLocked => session.Options.DockPositionLocked || session.Options.GlobalPositionLocked;
 
-    private void SessionChanged(object? sender, EventArgs e) => Refresh();
+    private void SessionChanged(object? sender, EventArgs e)
+    {
+        Refresh();
+        RefreshGroupPanels();
+    }
 
     protected override void OnDpiChanged(DpiScale oldDpi, DpiScale newDpi)
     {
@@ -113,21 +130,42 @@ public partial class DockWindow : Window
         DockOptions options = session.Options;
         DockWindowPosition.WorkArea work = GetDockWorkArea();
         layoutScale = work.Scale;
-        vertical = options.Placement == DockPlacement.Left || options.Placement == DockPlacement.Right ||
+        DockLayoutOptions layout = options.Layout;
+        bool edgeVertical = options.Placement == DockPlacement.Left || options.Placement == DockPlacement.Right ||
             (options.Placement == DockPlacement.Floating && options.FloatingVertical);
+        vertical = layout.Mode switch
+        {
+            DockLayoutMode.SingleColumn or DockLayoutMode.MultiColumnGrid => true,
+            DockLayoutMode.SingleRow or DockLayoutMode.MultiRowGrid => false,
+            _ => edgeVertical
+        };
+        bool openGroup = !groupExpandLayout && layout.Mode == DockLayoutMode.GroupExpand;
+        groupExpandLayout = layout.Mode == DockLayoutMode.GroupExpand;
+        DockEntry[] entries = session.Entries.Where(entry => entry.ParentId == null).ToArray();
+        int iconCount = entries.Length;
+        layoutTracks = layout.Mode is DockLayoutMode.MultiColumnGrid or DockLayoutMode.MultiRowGrid
+            ? Math.Min(layout.GridTracks, Math.Max(1, Math.Min(iconCount, layout.MaxVisibleIcons == 0 ? iconCount : layout.MaxVisibleIcons))) : 1;
         double cross = vertical ? work.Width : work.Height;
         double main = vertical ? work.Height : work.Width;
-        double thickness = Math.Min(options.DockThickness, Math.Max(1, cross - EdgeGap * 2));
+        double preferredThickness = layoutTracks == 1 ? options.DockThickness
+            : Math.Max(options.DockThickness, layoutTracks * (options.IconSize + 8 + layout.IconSpacing) + 12);
+        double thickness = Math.Min(preferredThickness, Math.Max(1, cross - EdgeGap * 2));
         double padding = Math.Clamp((thickness - options.IconSize - 4) / 2, 0, 5);
-        double side = Math.Min(options.IconSize + 8, Math.Max(1, thickness - (padding + 1) * 2));
+        double crossSpacing = layoutTracks > 1 ? layout.IconSpacing : 0;
+        double side = Math.Min(options.IconSize + 8, Math.Max(1, (thickness - (padding + 1) * 2) / layoutTracks - crossSpacing));
         double icon = Math.Min(options.IconSize, Math.Max(1, side - 2));
         double emptyItemLength = vertical ? Math.Max(34, side) : 92;
         double chrome = (padding + 1) * 2 + GripLength + SettingsLength;
-        double desired = chrome +
-            (session.Items.Count == 0 ? emptyItemLength : session.Items.Count * (side + 2));
-        double minimum = chrome + (session.Items.Count == 0 ? emptyItemLength : side + 2);
+        int mainCells = (int)Math.Ceiling(Math.Max(1, iconCount) / (double)layoutTracks);
+        double cell = side + layout.IconSpacing;
+        double desired = chrome + (iconCount == 0 ? emptyItemLength : mainCells * cell);
+        double minimum = chrome + (iconCount == 0 ? emptyItemLength : cell);
+        double cap = layout.MaxVisibleIcons == 0 ? double.PositiveInfinity
+            : chrome + Math.Max(1, layout.MaxVisibleIcons / layoutTracks) * cell;
         double length = Math.Min(options.DockLength > 0 ? Math.Max(options.DockLength, minimum) : desired,
             Math.Max(1, main - EdgeGap * 2));
+        if (iconCount > 0)
+            length = Math.Min(length, cap);
 
         Surface.Padding = new Thickness(padding);
         Surface.Width = vertical ? thickness : length;
@@ -141,23 +179,26 @@ public partial class DockWindow : Window
         MoveHandle.Visibility = Visibility.Hidden;
         GripDots.Orientation = vertical ? Orientation.Horizontal : Orientation.Vertical;
         SettingsButton.Margin = vertical ? new Thickness(0, 6, 0, 0) : new Thickness(6, 0, 0, 0);
-        ItemStrip.Orientation = vertical ? Orientation.Vertical : Orientation.Horizontal;
+        ItemStrip.Rows = vertical ? mainCells : layoutTracks;
+        ItemStrip.Columns = vertical ? layoutTracks : mainCells;
         ItemStrip.HorizontalAlignment = vertical ? HorizontalAlignment.Center : HorizontalAlignment.Left;
         ItemStrip.VerticalAlignment = vertical ? VerticalAlignment.Top : VerticalAlignment.Center;
         ItemScroll.HorizontalScrollBarVisibility = vertical ? ScrollBarVisibility.Disabled : ScrollBarVisibility.Hidden;
         ItemScroll.VerticalScrollBarVisibility = vertical ? ScrollBarVisibility.Hidden : ScrollBarVisibility.Disabled;
 
-        RebuildItems(side, icon, emptyItemLength, work.Scale);
+        RebuildItems(entries, side, icon, emptyItemLength, work.Scale);
         QueuePlacement();
+        if (openGroup && IsVisible)
+            QueueGroupLayoutOpen();
     }
 
-    private void RebuildItems(double side, double icon, double emptyLength, double scale)
+    private void RebuildItems(DockEntry[] entries, double side, double icon, double emptyLength, double scale)
     {
         CancelIconLoads();
         iconLoads = new CancellationTokenSource();
         ItemStrip.Children.Clear();
 
-        if (session.Items.Count == 0)
+        if (entries.Length == 0)
         {
             var add = new Button
             {
@@ -175,54 +216,22 @@ public partial class DockWindow : Window
             return;
         }
 
-        foreach (DockItem item in session.Items)
+        double gap = session.Options.Layout.IconSpacing / 2;
+        foreach (DockEntry entry in entries)
         {
-            var image = new Image { Width = icon, Height = icon, Stretch = Stretch.Uniform, IsHitTestVisible = false };
-            var button = new Button
-            {
-                Style = buttonStyle,
-                Width = side,
-                Height = side,
-                Margin = vertical ? new Thickness(0, 1, 0, 1) : new Thickness(1, 0, 1, 0),
-                Content = image,
-                ContextMenu = CreateItemMenu(item),
-                Tag = item.Id
-            };
-            button.ToolTip = new ToolTip
-            {
-                Content = item.Name,
-                PlacementTarget = button,
-                Placement = session.Options.Placement switch
-                {
-                    DockPlacement.Top => PlacementMode.Bottom,
-                    DockPlacement.Left => PlacementMode.Right,
-                    DockPlacement.Right => PlacementMode.Left,
-                    _ => PlacementMode.Top
-                }
-            };
-            AutomationProperties.SetAutomationId(button, $"DockItem_{item.Id:N}");
-            AutomationProperties.SetName(button, item.Name);
-            ToolTipService.SetInitialShowDelay(button, 400);
-            ToolTipService.SetBetweenShowDelay(button, 100);
-            button.Click += (_, _) => TryAction(() => OpenFromDock(item.Id));
-            button.PreviewMouseLeftButtonDown += (_, e) =>
-            {
-                pressedItem = button;
-                pressPoint = e.GetPosition(this);
-            };
-            button.PreviewMouseLeftButtonUp += (_, _) => pressedItem = null;
-            button.LostMouseCapture += (_, _) => { if (pressedItem == button) pressedItem = null; };
-            button.PreviewMouseMove += (_, e) => BeginReorder(button, item, e);
+            Button button = CreateEntryButton(entry.Id, icon, side, scale, iconLoads.Token);
+            button.Margin = new Thickness(vertical && layoutTracks == 1 ? 0 : gap, !vertical && layoutTracks == 1 ? 0 : gap,
+                vertical && layoutTracks == 1 ? 0 : gap, !vertical && layoutTracks == 1 ? 0 : gap);
             ItemStrip.Children.Add(button);
-            _ = LoadIconAsync(item, image, (int)Math.Ceiling(icon * scale), iconLoads.Token);
         }
     }
 
-    private async Task LoadIconAsync(DockItem item, Image image, int pixels, CancellationToken cancellationToken)
+    private async Task LoadIconAsync(DockItem? item, DockGroup? group, Image image, int pixels, CancellationToken cancellationToken)
     {
         try
         {
-            ImageSource bitmap = await icons.GetAsync(item, pixels, cancellationToken);
+            ImageSource bitmap = group == null ? await icons.GetAsync(item!, pixels, cancellationToken)
+                : await icons.GetAsync(group, pixels, cancellationToken);
             if (!cancellationToken.IsCancellationRequested)
                 image.Source = bitmap;
         }
@@ -285,24 +294,24 @@ public partial class DockWindow : Window
     private static bool IsActionError(Exception error) =>
         error is IOException or UnauthorizedAccessException or ArgumentException or Win32Exception or InvalidOperationException;
 
-    private void BeginReorder(Button source, DockItem item, MouseEventArgs e)
+    private void BeginReorder(Button source, Guid id, MouseEventArgs e)
     {
         if (pressedItem != source || e.LeftButton != MouseButtonState.Pressed)
             return;
 
-        Vector delta = e.GetPosition(this) - pressPoint;
+        Vector delta = e.GetPosition(source) - pressPoint;
         if (!BeyondDragThreshold(delta))
             return;
 
         e.Handled = true;
         pressedItem = null;
-        draggingItem = item.Id;
+        draggingItem = id;
         if (source.IsMouseCaptured)
             source.ReleaseMouseCapture();
 
         try
         {
-            DragDrop.DoDragDrop(source, new DataObject(ItemDragFormat, item.Id.ToString("D")), DragDropEffects.Move);
+            DragDrop.DoDragDrop(source, new DataObject(ItemDragFormat, id.ToString("D")), DragDropEffects.Move);
         }
         finally
         {
@@ -315,11 +324,11 @@ public partial class DockWindow : Window
     {
         e.Effects = DragDropEffects.None;
         HideDropIndicator();
-        if (draggingItem is Guid && e.Data.GetDataPresent(ItemDragFormat, false))
+        if (GetDraggedEntry(e) is Guid source)
         {
             Point pointer = e.GetPosition(Viewport);
             ScrollDuringDrag(pointer);
-            if (ShowItemDropFeedback(pointer))
+            if (ShowItemDropFeedback(pointer, source))
             {
                 e.Effects = DragDropEffects.Move;
             }
@@ -337,7 +346,7 @@ public partial class DockWindow : Window
         e.Effects = DragDropEffects.None;
         e.Handled = true;
         HideDropIndicator();
-        if (draggingItem is Guid source && e.Data.GetDataPresent(ItemDragFormat, false))
+        if (GetDraggedEntry(e) is Guid source)
         {
             Point pointer = e.GetPosition(Viewport);
             bool committed = false;
@@ -353,7 +362,9 @@ public partial class DockWindow : Window
             e.Data.GetData(DataFormats.FileDrop, false) is not string[] targets)
             return;
 
-        FileDropResult result = AcceptFiles(targets);
+        var (target, _, center) = GetInsertion(e.GetPosition(Viewport));
+        Guid? parent = center && target?.Tag is Guid candidate && session.Groups.Any(group => group.Id == candidate) ? candidate : null;
+        FileDropResult result = AcceptFiles(targets, parent);
         if (result.Errors.Count > 0)
         {
             string summary = string.Join(Environment.NewLine, result.Errors.Take(3));
@@ -368,7 +379,7 @@ public partial class DockWindow : Window
 
     internal sealed record FileDropResult(int Added, IReadOnlyList<string> Errors);
 
-    internal FileDropResult AcceptFiles(IEnumerable<string> paths)
+    internal FileDropResult AcceptFiles(IEnumerable<string> paths, Guid? parentId = null)
     {
         int added = 0;
         var errors = new List<string>();
@@ -376,7 +387,7 @@ public partial class DockWindow : Window
         {
             try
             {
-                session.AddItem(path);
+                session.AddItem(path, parentId: parentId);
                 added++;
             }
             catch (Exception error) when (IsActionError(error))
@@ -396,49 +407,64 @@ public partial class DockWindow : Window
         return allowed & DragDropEffects.Copy;
     }
 
-    private (Button? Button, bool After) GetInsertion(Point pointer)
+    private (Button? Button, bool After, bool Center) GetInsertion(Point pointer)
     {
-        Button? last = null;
-        double axis = vertical ? pointer.Y : pointer.X;
+        Button? nearest = null;
+        double distance = double.PositiveInfinity;
+        double fraction = 0;
         foreach (Button item in ItemStrip.Children.OfType<Button>())
         {
-            if (item.Tag is not Guid)
+            if (item.Tag is not Guid || item.ActualWidth <= 0 || item.ActualHeight <= 0)
                 continue;
 
-            Point center = item.TranslatePoint(new Point(item.ActualWidth / 2, item.ActualHeight / 2), Viewport);
-            if (axis < (vertical ? center.Y : center.X))
-                return (item, false);
-
-            last = item;
+            Point local = Viewport.TranslatePoint(pointer, item);
+            double ratio = vertical ? local.Y / item.ActualHeight : local.X / item.ActualWidth;
+            if (local.X >= 0 && local.X < item.ActualWidth && local.Y >= 0 && local.Y < item.ActualHeight)
+                return (item, ratio >= .5, ratio is >= .32 and <= .68);
+            double squareDistance = (local - new Point(item.ActualWidth / 2, item.ActualHeight / 2)).LengthSquared;
+            if (squareDistance < distance)
+            {
+                distance = squareDistance;
+                nearest = item;
+                fraction = ratio;
+            }
         }
 
-        return (last, true);
+        return (nearest, fraction >= .5, false);
     }
 
-    private bool ShowItemDropFeedback(Point pointer)
+    private bool ShowItemDropFeedback(Point pointer, Guid source)
     {
-        (Button? target, bool after) = GetInsertion(pointer);
-        if (target is null)
+        (Button? target, bool after, bool center) = GetInsertion(pointer);
+        if (!CanDropEntry(source, null, target?.Tag as Guid?, center))
             return false;
 
-        ShowInsertion(target, after);
+        if (target != null)
+            ShowInsertion(target, after, center);
         return true;
     }
 
     private bool CommitItemDrop(Guid source, Point pointer)
     {
-        (Button? target, bool after) = GetInsertion(pointer);
-        if (target?.Tag is not Guid id || id == source)
-            return false;
-
-        session.MoveItem(source, id, after);
-        return true;
+        (Button? target, bool after, bool center) = GetInsertion(pointer);
+        return CommitEntryDrop(source, null, target?.Tag as Guid?, after, center);
     }
 
-    private void ShowInsertion(Button target, bool after)
+    private void ShowInsertion(Button target, bool after, bool center)
     {
         Point origin = target.TranslatePoint(new Point(), Viewport);
-        if (vertical)
+        Brush accent = (Brush)FindResource("DockAccent");
+        DropIndicator.BorderBrush = accent;
+        DropIndicator.BorderThickness = center ? new Thickness(1) : new Thickness(0);
+        DropIndicator.Background = center ? Brushes.Transparent : accent;
+        if (center)
+        {
+            DropIndicator.Width = target.ActualWidth;
+            DropIndicator.Height = target.ActualHeight;
+            Canvas.SetLeft(DropIndicator, origin.X);
+            Canvas.SetTop(DropIndicator, origin.Y);
+        }
+        else if (vertical)
         {
             DropIndicator.Width = Math.Max(2, target.ActualWidth - 8);
             DropIndicator.Height = 2;

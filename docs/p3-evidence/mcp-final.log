@@ -1,0 +1,58 @@
+2026-11-24T07:56:24.307+00:00 START exe=D:\myapp\desk-design\artifacts\DesktopDock-P3-win-x64\DesktopDock.exe directory=D:\myapp\desk-design\artifacts\p3-final-c719d35264fb4b40b39922260e429807
+2026-11-24T07:56:25.529+00:00 PASS P3 tools advertised on the existing stdio MCP interface total=28
+2026-11-24T07:56:25.576+00:00 PASS P2 profile preserves IDs, root order and bytes before migration
+2026-11-24T07:56:25.628+00:00 PASS schema 2 to 3 write preserves byte-exact backup
+2026-11-24T07:56:25.884+00:00 PASS two-level limit, non-group parent and cycles rejected without writes
+2026-11-24T07:56:25.956+00:00 PASS root item center drop creates a grid group at the target position
+2026-11-24T07:56:26.024+00:00 PASS root group center drop moves across groups
+2026-11-24T07:56:26.155+00:00 PASS second-level open creates both native panels
+2026-11-24T07:56:26.263+00:00 PASS drop into an empty visible subgroup
+2026-11-24T07:56:26.361+00:00 PASS edge drop into an existing group lands before the target
+2026-11-24T07:56:26.431+00:00 PASS within-group reorder persists the new siblings
+2026-11-24T07:56:26.500+00:00 PASS dragging a subgroup item out uses the Dock's anchored edge drop
+2026-11-24T07:56:26.852+00:00 PASS subgroup center drop disallows creating a third level
+2026-11-24T07:56:26.885+00:00 PASS group reorders among root siblings
+2026-11-24T07:56:26.964+00:00 PASS renamed group loads the 32px custom PNG in its real Dock button
+2026-11-24T07:56:27.180+00:00 PASS Grid panel has the expected live WPF geometry and direction entries=6 x=[13, 69, 123] y=[51, 101]
+2026-11-24T07:56:27.181+00:00 PASS panel spacing leaves an actual gap between windows gapPx=14
+2026-11-24T07:56:27.203+00:00 PASS real WPF PNG p3-group-grid.png bytes=6231
+2026-11-24T07:56:27.421+00:00 PASS Fan panel has the expected live WPF geometry and direction entries=6 x=[11, 61, 111, 161, 211, 261] y=[49, 54, 72]
+2026-11-24T07:56:27.443+00:00 PASS real WPF PNG p3-group-fan.png bytes=6104
+2026-11-24T07:56:27.646+00:00 PASS Horizontal panel has the expected live WPF geometry and direction entries=6 x=[11, 61, 111, 161, 211, 261] y=[51]
+2026-11-24T07:56:27.653+00:00 PASS real WPF PNG p3-group-horizontal.png bytes=5018
+2026-11-24T07:56:27.885+00:00 PASS Vertical panel has the expected live WPF geometry and direction entries=6 x=[68] y=[51, 101, 151, 201, 251, 301]
+2026-11-24T07:56:27.890+00:00 PASS real WPF PNG p3-group-vertical.png bytes=10627
+2026-11-24T07:56:27.897+00:00 PASS sampled intermediate opacity during the 170ms WPF opening animation samples={'Grid': [1, 0.535, 0.645, 0.754, 0.864], 'Fan': [1, 0.474, 0.639, 0.749, 0.913], 'Horizontal': [1, 0.489, 0.654, 0.763, 0.873], 'Vertical': [1, 0.543, 0.653, 0.763, 0.873, 0.982]}
+2026-11-24T07:56:27.918+00:00 PASS Dock layout SingleRow renders requested tracks {'mode': 'SingleRow', 'rows': 1, 'columns': 7, 'visibleLength': 350, 'scrolling': False}
+2026-11-24T07:56:27.922+00:00 PASS real WPF PNG p3-dock-singlerow.png bytes=3948
+2026-11-24T07:56:27.948+00:00 PASS Dock layout SingleColumn renders requested tracks {'mode': 'SingleColumn', 'rows': 7, 'columns': 1, 'visibleLength': 350, 'scrolling': False}
+2026-11-24T07:56:27.951+00:00 PASS real WPF PNG p3-dock-singlecolumn.png bytes=4381
+2026-11-24T07:56:27.976+00:00 PASS Dock layout MultiRowGrid renders requested tracks {'mode': 'MultiRowGrid', 'rows': 2, 'columns': 4, 'visibleLength': 200, 'scrolling': False}
+2026-11-24T07:56:27.991+00:00 PASS real WPF PNG p3-dock-multirowgrid.png bytes=5323
+2026-11-24T07:56:28.015+00:00 PASS Dock layout MultiColumnGrid renders requested tracks {'mode': 'MultiColumnGrid', 'rows': 4, 'columns': 2, 'visibleLength': 200, 'scrolling': False}
+2026-11-24T07:56:28.019+00:00 PASS real WPF PNG p3-dock-multicolumngrid.png bytes=4980
+2026-11-24T07:56:28.055+00:00 PASS maximum icon count limits the viewport while retaining scrolling
+2026-11-24T07:56:28.115+00:00 PASS automatic layout follows vertical Dock placement
+2026-11-24T07:56:28.191+00:00 PASS group-expansion layout opens first root group
+2026-11-24T07:56:28.204+00:00 PASS real WPF PNG p3-dock-groupexpand.png bytes=3948
+2026-11-24T07:56:28.212+00:00 PASS real WPF PNG p3-group-groupexpand.png bytes=10792
+2026-11-24T07:56:28.649+00:00 PASS real WPF PNG p3-settings-layout.png bytes=45956
+2026-11-24T07:56:28.809+00:00 PASS Escape dismisses a real context menu before the open group panels
+2026-11-24T07:56:28.883+00:00 PASS Escape closes subgroup then parent while Resident stays visible
+2026-11-24T07:56:29.044+00:00 PASS Back returns one group and Dock blank clears the rest
+2026-11-24T07:56:29.192+00:00 PASS outside click clears both group panels in Resident mode
+2026-11-24T07:56:29.242+00:00 PASS AutoHide starts fully hidden
+2026-11-24T07:56:29.471+00:00 PASS native Dock and both panels stay visible while sampling their union point=(1280, 1398)
+2026-11-24T07:56:29.497+00:00 PASS native Dock and both panels stay visible while sampling their union point=(1375, 1359)
+2026-11-24T07:56:29.513+00:00 PASS native Dock and both panels stay visible while sampling their union point=(1375, 1173)
+2026-11-24T07:56:29.526+00:00 PASS native Dock and both panels stay visible while sampling their union point=(1473, 1068)
+2026-11-24T07:56:29.541+00:00 PASS native Dock and both panels stay visible while sampling their union point=(1571, 1068)
+2026-11-24T07:56:29.543+00:00 PASS a click inside the child panel belongs to the interaction area
+2026-11-24T07:56:29.573+00:00 PASS continuous leave from the whole interaction area hides all three HWNDs
+2026-11-24T07:56:29.705+00:00 PASS outside click closes Dock and both panels immediately in AutoHide
+2026-11-24T07:56:29.843+00:00 PASS explicit keep choice promotes subgroup intact in the same root slot
+2026-11-24T07:56:30.068+00:00 PASS deletion without an explicit choice cannot mutate config
+2026-11-24T07:56:30.100+00:00 PASS explicit remove choice removes only that subtree's references
+2026-11-24T07:56:30.102+00:00 PASS removing group references leaves all original files and the icon SHA-256 unchanged
+2026-11-24T07:56:31.164+00:00 PASS normal restart restores ordered hierarchy, custom icon and layout settings
+2026-11-24T07:56:31.236+00:00 END passed=56 failed=0

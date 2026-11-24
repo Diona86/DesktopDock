@@ -35,7 +35,7 @@ public partial class App
         new("dock_visibility", "Show or hide the Dock without closing the process.",
             """{"type":"object","properties":{"visible":{"type":"boolean"}},"required":["visible"],"additionalProperties":false}"""),
         new("dock_settings", "Open, close or navigate the real settings window.",
-            """{"type":"object","properties":{"visible":{"type":"boolean"},"page":{"enum":["appearance","items","position","general","hotZones","shortcuts"]}},"required":["visible"],"additionalProperties":false}"""),
+            """{"type":"object","properties":{"visible":{"type":"boolean"},"page":{"enum":["appearance","items","position","general","hotZones","shortcuts","layout"]}},"required":["visible"],"additionalProperties":false}"""),
         new("dock_drag_item", "Exercise in-app drop placement, feedback and order persistence without injecting global pointer events.",
             """{"type":"object","properties":{"id":{"type":"string","format":"uuid"},"targetId":{"type":"string","format":"uuid"},"after":{"type":"boolean"}},"required":["id","targetId","after"],"additionalProperties":false}"""),
         new("dock_drag_handle", "Exercise the movement handle's native placement and locks without injecting global pointer events.",
@@ -43,8 +43,9 @@ public partial class App
         new("dock_tooltip", "Open or close the real WPF tooltip for a test Dock item.",
             """{"type":"object","properties":{"id":{"type":"string","format":"uuid"},"open":{"type":"boolean"}},"required":["id","open"],"additionalProperties":false}"""),
         new("dock_capture", "Render the selected app window's own visual tree as a PNG.",
-            """{"type":"object","properties":{"window":{"enum":["dock","settings"]}},"required":["window"],"additionalProperties":false}"""),
-        .. P2Tools()
+            """{"type":"object","properties":{"window":{"enum":["dock","settings","group"]}},"required":["window"],"additionalProperties":false}"""),
+        .. P2Tools(),
+        .. P3Tools()
     ];
 
     private async Task RunMcp()
@@ -134,6 +135,7 @@ public partial class App
                         "general" => 3,
                         "hotZones" => 4,
                         "shortcuts" => 5,
+                        "layout" => 6,
                         _ => throw new ArgumentException("Unknown settings page.")
                     };
                     ShowSettings();
@@ -156,10 +158,11 @@ public partial class App
                 {
                     "dock" => testDock,
                     "settings" => settings,
+                    "group" => testDock.CurrentGroupPanel,
                     _ => throw new ArgumentException("Unknown window.")
                 });
             default:
-                return InvokeP2Mcp(name, args);
+                return name.StartsWith("dock_p3_", StringComparison.Ordinal) ? InvokeP3Mcp(name, args) : InvokeP2Mcp(name, args);
         }
         return McpReply(ReadTestState());
     }
@@ -167,8 +170,11 @@ public partial class App
     private object ReadTestState() => new
     {
         items = session!.Items,
+        groups = session.Groups,
+        entries = session.Entries,
         options = session.Options,
         view = dock!.ReadVisualState(),
+        groupPanels = dock.ReadGroupPanelState(),
         settingsVisible = settings?.IsVisible == true,
         interaction = interaction!.Diagnostics()
     };

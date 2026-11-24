@@ -1,0 +1,9 @@
+未能将“C:\Users\user\AppData\Local\Packages\openai.codex_2p2nqsd0c76g0\AC\#!sandbox.{13562a08-0102-43a4-b24a-4b7e84e6ff67}\Temp\desktop-dock-p3-cli\.dotnet\tools”添加到 PATH 环境变量。请将此目录添加到 PATH，以使用通过 "dotnet tool install" 安装的工具。
+  DesktopDock -> D:\myapp\desk-design\src\DesktopDock\bin\Release\net10.0-windows\DesktopDock.dll
+
+已成功生成。
+    0 个警告
+    0 个错误
+
+已用时间 00:00:06.85
+buildExitCode=0

@@ -23,6 +23,7 @@
                     <ListBoxItem Content="通用设置" />
                     <ListBoxItem Content="热区与行为" />
                     <ListBoxItem Content="快捷键" />
+                    <ListBoxItem Content="布局与分组" />
                 </ListBox>
             </DockPanel>
         </Border>
@@ -124,6 +125,7 @@
 
                 <local:BehaviorSettingsPage x:Name="BehaviorPage" Visibility="Collapsed" />
                 <local:HotkeySettingsPage x:Name="HotkeysPage" Visibility="Collapsed" />
+                <local:LayoutSettingsPage x:Name="LayoutPage" Visibility="Collapsed" />
             </Grid>
 
             <DockPanel Grid.Row="2" LastChildFill="True" Margin="0,16,0,0">

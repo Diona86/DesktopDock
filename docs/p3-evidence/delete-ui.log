@@ -1,0 +1,7 @@
+P3 WPF delete dialog verification, 2026-11-24, isolated settings fixture.
+The fixture used actual P3 Core and Settings/Dialog source with the baseline host. Release build: 0 warnings, 0 errors. Process exit 0.
+Actual WPF capture at artifacts/p3-settings-probe-3ef04ea4b88a4586a265ebc9f3f0028e/delete-group.png (494x268).
+Observed descendant summary: 2 item references and 1 subgroup. Initial radio choices unchecked; confirmation disabled.
+Programmatically selecting either actual WPF radio enables confirmation and clears the other selection.
+Closing without confirmation preserved exact configuration bytes. No physical input was injected.
+Both committed deletion outcomes and source SHA-256 checks were exercised separately in core.log and mcp-final.log.

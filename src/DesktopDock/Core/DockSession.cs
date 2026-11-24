@@ -3,9 +3,9 @@ using System.Text.Json.Serialization;
 
 namespace DesktopDock;
 
-public sealed class DockSession : IDisposable
+public sealed partial class DockSession : IDisposable
 {
-    private const int CurrentVersion = 2;
+    private const int CurrentVersion = 3;
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -18,7 +18,7 @@ public sealed class DockSession : IDisposable
     private FileStream? _lease;
     private volatile Configuration _state;
 
-    private sealed record Configuration(int SchemaVersion, DockOptions Options, DockItem[] Items);
+    private sealed record Configuration(int SchemaVersion, DockOptions Options, DockItem[] Items, DockGroup[] Groups, DockEntry[] Entries);
 
     private DockSession(string configPath, FileStream lease, Configuration state)
     {
@@ -28,6 +28,8 @@ public sealed class DockSession : IDisposable
     }
 
     public IReadOnlyList<DockItem> Items => Array.AsReadOnly(_state.Items);
+    public IReadOnlyList<DockGroup> Groups => Array.AsReadOnly(_state.Groups);
+    public IReadOnlyList<DockEntry> Entries => Array.AsReadOnly(_state.Entries);
     public DockOptions Options => _state.Options;
     public event EventHandler? Changed;
 
@@ -56,12 +58,16 @@ public sealed class DockSession : IDisposable
         }
     }
 
-    public DockItem AddItem(string target, string? name = null)
+    public DockItem AddItem(string target, string? name = null, Guid? parentId = null)
     {
         var (kind, value) = DockTargets.Resolve(target);
         string itemName = string.IsNullOrWhiteSpace(name) ? DockTargets.DefaultName(kind, value) : name.Trim();
         var item = new DockItem(Guid.NewGuid(), itemName, kind, value);
-        Change(state => state with { Items = [.. state.Items, item] });
+        Change(state => OrderTree(state with
+        {
+            Items = [.. state.Items, item],
+            Entries = [.. state.Entries, new DockEntry(item.Id, parentId)]
+        }));
         return item;
     }
 
@@ -94,7 +100,7 @@ public sealed class DockSession : IDisposable
         int index = FindItem(state.Items, id);
         var items = state.Items.ToList();
         items.RemoveAt(index);
-        return state with { Items = [.. items] };
+        return state with { Items = [.. items], Entries = state.Entries.Where(entry => entry.Id != id).ToArray() };
     });
 
     public void MoveItem(Guid itemId, Guid targetId, bool after)
@@ -104,16 +110,12 @@ public sealed class DockSession : IDisposable
 
         Change(state =>
         {
-            int sourceIndex = FindItem(state.Items, itemId);
-            int targetIndex = FindItem(state.Items, targetId);
-            int insertIndex = targetIndex + (after ? 1 : 0) - (sourceIndex < targetIndex ? 1 : 0);
-            if (insertIndex == sourceIndex)
-                return state;
-
-            var items = state.Items.ToList();
-            items.RemoveAt(sourceIndex);
-            items.Insert(insertIndex, state.Items[sourceIndex]);
-            return state with { Items = [.. items] };
+            FindItem(state.Items, itemId);
+            FindItem(state.Items, targetId);
+            Guid? parent = FindEntry(state, targetId).ParentId;
+            if (FindEntry(state, itemId).ParentId != parent)
+                throw new ArgumentException("请选择同一层级中的排序目标。");
+            return MoveEntry(state, itemId, parent, targetId, after);
         });
     }
 
@@ -162,9 +164,9 @@ public sealed class DockSession : IDisposable
             if (ReferenceEquals(next, _state))
                 return;
 
-            bool migrate = _state.SchemaVersion == 1;
+            int? migrateFrom = _state.SchemaVersion < CurrentVersion ? _state.SchemaVersion : null;
             next = next with { SchemaVersion = CurrentVersion };
-            Write(next, migrate);
+            Write(next, migrateFrom);
             _state = next;
         }
 
@@ -182,7 +184,7 @@ public sealed class DockSession : IDisposable
                 version.ValueKind != JsonValueKind.Number || !version.TryGetInt32(out int number))
                 throw new InvalidDataException("Dock 配置缺少有效的版本号，原文件已保留。");
 
-            if (number is not (1 or CurrentVersion))
+            if (number is < 1 or > CurrentVersion)
                 throw new InvalidDataException($"Dock 配置版本 {number} 与当前版本 {CurrentVersion} 不兼容，原文件已保留。");
 
             Configuration? state = root.Deserialize<Configuration>(JsonOptions);
@@ -199,11 +201,17 @@ public sealed class DockSession : IDisposable
                 DockTargets.ValidateReference(item);
             }
 
-            return state;
+            if (number < CurrentVersion)
+                state = state with { Groups = [], Entries = state.Items.Select(item => new DockEntry(item.Id)).ToArray() };
+            if (state.Groups is null || state.Entries is null)
+                throw new InvalidDataException("Dock 配置缺少分组或排序数据，原文件已保留。");
+            foreach (DockGroup group in state.Groups)
+                ValidateGroup(group);
+            return OrderTree(state);
         }
         catch (FileNotFoundException)
         {
-            return new Configuration(CurrentVersion, new DockOptions(), []);
+            return new Configuration(CurrentVersion, new DockOptions(), [], [], []);
         }
         catch (Exception error) when (error is JsonException or ArgumentException)
         {
@@ -211,7 +219,7 @@ public sealed class DockSession : IDisposable
         }
     }
 
-    private void Write(Configuration state, bool migrate)
+    private void Write(Configuration state, int? migrateFrom)
     {
         string temporary = Path.Combine(Path.GetDirectoryName(_configPath)!, $".dock-{Guid.NewGuid():N}.tmp");
         bool created = false;
@@ -226,7 +234,8 @@ public sealed class DockSession : IDisposable
 
             if (File.Exists(_configPath))
             {
-                string? backup = migrate ? Path.Combine(Path.GetDirectoryName(_configPath)!, $"dock.v1-{Guid.NewGuid():N}.bak") : null;
+                string? backup = migrateFrom is int version
+                    ? Path.Combine(Path.GetDirectoryName(_configPath)!, $"dock.v{version}-{Guid.NewGuid():N}.bak") : null;
                 File.Replace(temporary, _configPath, backup);
             }
             else

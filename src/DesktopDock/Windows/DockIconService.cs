@@ -18,13 +18,19 @@ public sealed class DockIconService
     private readonly Dictionary<IconKey, Lazy<ImageSource>> cache = [];
     private readonly Queue<IconKey> insertionOrder = [];
 
-    public async Task<ImageSource> GetAsync(DockItem item, int pixelSize, CancellationToken cancellationToken = default)
+    public Task<ImageSource> GetAsync(DockItem item, int pixelSize, CancellationToken cancellationToken = default)
+        => GetAsync(item.Kind, item.Kind == DockItemKind.Url ? null : item.Target, item.CustomIconPath, pixelSize, cancellationToken);
+
+    internal Task<ImageSource> GetAsync(DockGroup group, int pixelSize, CancellationToken cancellationToken = default)
+        => GetAsync(DockItemKind.Folder, null, group.CustomIconPath, pixelSize, cancellationToken);
+
+    private async Task<ImageSource> GetAsync(DockItemKind kind, string? target, string? customIconPath, int pixelSize, CancellationToken cancellationToken)
     {
         int size = Math.Clamp(pixelSize, 16, MaxIconSize);
         await extractionSlots.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            ImageSource image = await Task.Run(() => GetOrLoad(item, size), cancellationToken).ConfigureAwait(false);
+            ImageSource image = await Task.Run(() => GetOrLoad(kind, target, customIconPath, size), cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
             return image;
         }
@@ -34,10 +40,9 @@ public sealed class DockIconService
         }
     }
 
-    private ImageSource GetOrLoad(DockItem item, int size)
+    private ImageSource GetOrLoad(DockItemKind kind, string? target, string? customIconPath, int size)
     {
-        string? target = item.Kind == DockItemKind.Url ? null : item.Target;
-        var key = new IconKey(item.Kind, target, ReadStamp(target), item.CustomIconPath, ReadStamp(item.CustomIconPath), size);
+        var key = new IconKey(kind, target, ReadStamp(target), customIconPath, ReadStamp(customIconPath), size);
         Lazy<ImageSource>? entry;
         lock (cacheLock)
         {

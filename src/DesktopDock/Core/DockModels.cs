@@ -41,6 +41,7 @@ public sealed record DockOptions
     public bool DockPositionLocked { get; init; }
     public bool ShowDockOnStartup { get; init; } = true;
     public DockBehaviorOptions Behavior { get; init; } = new();
+    public DockLayoutOptions Layout { get; init; } = new();
 
     internal void Validate()
     {
@@ -58,6 +59,9 @@ public sealed record DockOptions
         if (Behavior is null)
             throw new ArgumentException("Dock 行为设置无效。");
         Behavior.Validate();
+        if (Layout is null)
+            throw new ArgumentException("Dock 布局设置无效。");
+        Layout.Validate();
     }
 
     private static bool InRange(double value, double minimum, double maximum) =>
