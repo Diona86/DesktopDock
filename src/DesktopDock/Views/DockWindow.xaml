@@ -1,6 +1,7 @@
 <Window x:Class="DesktopDock.DockWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:DesktopDock"
         Title="Desktop Dock" AutomationProperties.AutomationId="DesktopDockWindow"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ShowInTaskbar="False" ShowActivated="False" ResizeMode="NoResize"
@@ -9,6 +10,16 @@
     <Window.Resources>
         <SolidColorBrush x:Key="DockForeground" Color="#FFF3F3ED"/>
         <SolidColorBrush x:Key="DockAccent" Color="#FFB6CDBD"/>
+        <Style x:Key="ResizeZone" TargetType="Thumb">
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                        <Border Background="Transparent"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <Style x:Key="DockButton" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="{StaticResource DockForeground}"/>
@@ -23,13 +34,46 @@
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            <Grid>
+                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                <Thumb x:Name="TileResize" Width="19" Height="16" HorizontalAlignment="Right"
+                                       VerticalAlignment="Bottom" Visibility="Collapsed" Focusable="False" Cursor="SizeNWSE"
+                                       AutomationProperties.AutomationId="DockTileResize"
+                                       AutomationProperties.Name="调整图标占格"
+                                       ToolTip="拖动调整图标占格，靠近屏幕边缘时向屏幕内拖动">
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <Border Background="#F0202422" CornerRadius="3">
+                                                <Path Data="M 0,5 L 5,0 M 4,5 L 7,2"
+                                                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                      Stroke="{StaticResource DockAccent}" StrokeThickness="1"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Grid>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="local:DockWindow.IsResizableTile" Value="True"/>
+                                    <Condition Property="IsMouseOver" Value="True"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="TileResize" Property="Visibility" Value="Visible"/>
+                            </MultiTrigger>
+                            <Trigger SourceName="TileResize" Property="IsMouseCaptured" Value="True">
+                                <Setter TargetName="TileResize" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
             <Style.Triggers>
+                <Trigger Property="local:DockWindow.IsExpandedTile" Value="True">
+                    <Setter Property="Background" Value="#253E5146"/>
+                    <Setter Property="BorderBrush" Value="#3B91A797"/>
+                </Trigger>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="#253E5146"/>
                     <Setter Property="BorderBrush" Value="#4B91A797"/>
@@ -43,6 +87,7 @@
             </Style.Triggers>
         </Style>
     </Window.Resources>
+    <Grid>
     <Border x:Name="Surface" Background="#F0202422" BorderBrush="#C9525B54"
             BorderThickness="1" Padding="5" CornerRadius="13">
         <DockPanel>
@@ -57,17 +102,16 @@
                     </StackPanel>
                 </Button>
             </Border>
-            <Button x:Name="SettingsButton" DockPanel.Dock="Right" Width="30" Height="30"
-                    Style="{StaticResource DockButton}" HorizontalAlignment="Center" VerticalAlignment="Center"
-                    ToolTip="打开设置" AutomationProperties.AutomationId="DockSettings" AutomationProperties.Name="打开设置">
-                <Path Data="M 1,3 H 15 M 5,1 V 5 M 1,8 H 15 M 11,6 V 10 M 1,13 H 15 M 7,11 V 15"
-                      Stroke="{StaticResource DockAccent}" StrokeThickness="1.35"/>
-            </Button>
             <Grid x:Name="Viewport" ClipToBounds="True">
                 <ScrollViewer x:Name="ItemScroll" HorizontalScrollBarVisibility="Hidden"
                               VerticalScrollBarVisibility="Disabled" PanningMode="None"
                               Focusable="False" Background="Transparent">
                     <UniformGrid x:Name="ItemStrip" Rows="1"/>
+                </ScrollViewer>
+                <ScrollViewer x:Name="GridScroll" Visibility="Collapsed"
+                              HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"
+                              PanningMode="None" Focusable="False" Background="Transparent">
+                    <Canvas x:Name="TileCanvas" HorizontalAlignment="Left" VerticalAlignment="Top" Background="Transparent"/>
                 </ScrollViewer>
                 <Canvas IsHitTestVisible="False">
                     <Border x:Name="DropIndicator" Visibility="Collapsed" Background="{StaticResource DockAccent}"
@@ -76,4 +120,13 @@
             </Grid>
         </DockPanel>
     </Border>
+        <Thumb Style="{StaticResource ResizeZone}" Tag="Left" HorizontalAlignment="Left" Width="6" Margin="0,9,0,9" Cursor="SizeWE"/>
+        <Thumb Style="{StaticResource ResizeZone}" Tag="Right" HorizontalAlignment="Right" Width="6" Margin="0,9,0,9" Cursor="SizeWE"/>
+        <Thumb Style="{StaticResource ResizeZone}" Tag="Top" VerticalAlignment="Top" Height="6" Margin="9,0,9,0" Cursor="SizeNS"/>
+        <Thumb Style="{StaticResource ResizeZone}" Tag="Bottom" VerticalAlignment="Bottom" Height="6" Margin="9,0,9,0" Cursor="SizeNS"/>
+        <Thumb Style="{StaticResource ResizeZone}" Tag="Left Top" HorizontalAlignment="Left" VerticalAlignment="Top" Width="9" Height="9" Cursor="SizeNWSE"/>
+        <Thumb Style="{StaticResource ResizeZone}" Tag="Right Top" HorizontalAlignment="Right" VerticalAlignment="Top" Width="9" Height="9" Cursor="SizeNESW"/>
+        <Thumb Style="{StaticResource ResizeZone}" Tag="Left Bottom" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="9" Height="9" Cursor="SizeNESW"/>
+        <Thumb Style="{StaticResource ResizeZone}" Tag="Right Bottom" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="9" Height="9" Cursor="SizeNWSE"/>
+    </Grid>
 </Window>

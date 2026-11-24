@@ -1,0 +1,120 @@
+2026-11-24T08:43:30.7970192+00:00 start exe=D:\myapp\desk-design\artifacts\DesktopDock-P3-Grid-R2-win-x64\DesktopDock.exe run=D:\myapp\desk-design\artifacts\p1-mcp-519628a511b4426baab596efa11c4c1e
+2026-11-24T08:43:31.5013143+00:00 SKIP P1-04 actual browser navigation requested by caller
+2026-11-24T08:43:31.5914757+00:00 MCP request initialize id=1
+2026-11-24T08:43:33.0113417+00:00 MCP response initialize id=1 ms=1365 bytes=171
+2026-11-24T08:43:33.0699674+00:00 MCP request tools/list id=2
+2026-11-24T08:43:33.1161396+00:00 MCP response tools/list id=2 ms=16 bytes=8984
+2026-11-24T08:43:33.1427257+00:00 MCP initialized protocol=2025-11-25 pid=19784 tools=29
+2026-11-24T08:43:33.3175464+00:00 MCP request dock_add id=4
+2026-11-24T08:43:33.4174812+00:00 MCP response dock_add id=4 ms=77 bytes=5322
+2026-11-24T08:43:33.4352217+00:00 MCP request dock_add id=5
+2026-11-24T08:43:33.5864717+00:00 MCP response dock_add id=5 ms=130 bytes=9678
+2026-11-24T08:43:33.6070737+00:00 MCP request dock_add id=6
+2026-11-24T08:43:33.7120697+00:00 MCP response dock_add id=6 ms=87 bytes=12158
+2026-11-24T08:43:33.7393098+00:00 MCP added EXE with picker handler. All filesystem targets were explicitly provided.
+2026-11-24T08:43:33.7643536+00:00 MCP request dock_open id=8
+2026-11-24T08:43:33.9286131+00:00 MCP response dock_open id=8 ms=141 bytes=12114
+2026-11-24T08:43:34.0993523+00:00 EXE receipt utc=2026-11-24T08:43:33.9793674Z; fromShortcut=False; workingDirectory=D:\myapp\desk-design\artifacts\p1-mcp-519628a511b4426baab596efa11c4c1e\fixtures
+2026-11-24T08:43:34.1133320+00:00 PASS P1-01 EXE launch receipt
+2026-11-24T08:43:34.1328339+00:00 MCP request dock_open id=9
+2026-11-24T08:43:34.2169336+00:00 MCP response dock_open id=9 ms=66 bytes=12114
+2026-11-24T08:43:34.3629858+00:00 LNK receipt utc=2026-11-24T08:43:34.2556468Z; fromShortcut=True; workingDirectory=D:\myapp\desk-design\artifacts\p1-mcp-519628a511b4426baab596efa11c4c1e\fixtures\样例目录
+2026-11-24T08:43:34.3828594+00:00 PASS P1-02 LNK launch arguments and working directory
+2026-11-24T08:43:34.4168150+00:00 SKIP P1-03 Shell association requests requested by caller
+2026-11-24T08:43:34.4473757+00:00 PASS P1-03 ordinary file and folder added through drop handler
+2026-11-24T08:43:34.4825865+00:00 PASS P1-04 URL validation
+2026-11-24T08:43:34.5231819+00:00 MCP request dock_edit id=10
+2026-11-24T08:43:34.5834281+00:00 MCP response dock_edit id=10 ms=40 bytes=12522
+2026-11-24T08:43:34.6378495+00:00 Loaded Dock visuals P1 自定义图标=40x40, P1 Shortcut=40x40, P1 Note.txt=40x40, 样例目录=40x40, 127.0.0.1=x, example.test=x
+2026-11-24T08:43:34.6648136+00:00 MCP request dock_capture id=13
+2026-11-24T08:43:34.7159941+00:00 MCP response dock_capture id=13 ms=30 bytes=9796
+2026-11-24T08:43:34.7606505+00:00 MCP screenshot dock-visible.png bytes=6716
+2026-11-24T08:43:34.7778918+00:00 PASS P1-05 custom icon and actual Dock capture
+2026-11-24T08:43:34.8032758+00:00 MCP request dock_tooltip id=14
+2026-11-24T08:43:34.8844382+00:00 MCP response dock_tooltip id=14 ms=62 bytes=481
+2026-11-24T08:43:34.9094112+00:00 Tooltip open state {"name":"P1 自定义图标","content":"P1 自定义图标","isOpen":true,"popupAttached":true,"width":92,"height":25}
+2026-11-24T08:43:34.9281728+00:00 MCP request dock_tooltip id=15
+2026-11-24T08:43:34.9494313+00:00 MCP response dock_tooltip id=15 ms=2 bytes=483
+2026-11-24T08:43:34.9663469+00:00 Tooltip was controlled through MCP. Physical pointer hover was not used.
+2026-11-24T08:43:34.9887523+00:00 PASS P1-06 WPF Tooltip through MCP open and close
+2026-11-24T08:43:35.0388990+00:00 MCP request dock_drag_item id=17
+2026-11-24T08:43:35.1339248+00:00 MCP response dock_drag_item id=17 ms=74 bytes=1421
+2026-11-24T08:43:35.1865296+00:00 Reorder feedback=True windowMoved=False kinds=Shortcut,File,Application,Folder,Url,Url
+2026-11-24T08:43:35.2055493+00:00 PASS P1-07 item reorder via Dock movement path
+2026-11-24T08:43:35.2368817+00:00 MCP request dock_options id=19
+2026-11-24T08:43:35.2800028+00:00 MCP response dock_options id=19 ms=17 bytes=12478
+2026-11-24T08:43:35.3095829+00:00 Placement Bottom vertical=False bounds={"x":1111,"y":1366,"width":338,"height":64}
+2026-11-24T08:43:35.3293195+00:00 MCP request dock_options id=21
+2026-11-24T08:43:35.4190328+00:00 MCP response dock_options id=21 ms=69 bytes=12510
+2026-11-24T08:43:35.4387604+00:00 Placement Top vertical=False bounds={"x":1111,"y":10,"width":338,"height":64}
+2026-11-24T08:43:35.4568967+00:00 MCP request dock_options id=23
+2026-11-24T08:43:35.5638872+00:00 MCP response dock_options id=23 ms=89 bytes=12508
+2026-11-24T08:43:35.5941130+00:00 Placement Left vertical=True bounds={"x":10,"y":551,"width":64,"height":338}
+2026-11-24T08:43:35.6160201+00:00 MCP request dock_options id=25
+2026-11-24T08:43:35.7055711+00:00 MCP response dock_options id=25 ms=64 bytes=12510
+2026-11-24T08:43:35.7375136+00:00 Placement Right vertical=True bounds={"x":2486,"y":551,"width":64,"height":338}
+2026-11-24T08:43:35.7606003+00:00 MCP request dock_options id=27
+2026-11-24T08:43:35.8378655+00:00 MCP response dock_options id=27 ms=57 bytes=12524
+2026-11-24T08:43:35.8596919+00:00 MCP request dock_drag_handle id=29
+2026-11-24T08:43:35.9214329+00:00 MCP response dock_drag_handle id=29 ms=41 bytes=771
+2026-11-24T08:43:35.9503065+00:00 MCP request dock_options id=31
+2026-11-24T08:43:36.0144332+00:00 MCP response dock_options id=31 ms=45 bytes=12572
+2026-11-24T08:43:36.0355123+00:00 MCP request dock_drag_handle id=32
+2026-11-24T08:43:36.0582777+00:00 MCP response dock_drag_handle id=32 ms=2 bytes=775
+2026-11-24T08:43:36.0857962+00:00 Locked handle globalPositionLocked moved=False gripVisible=False
+2026-11-24T08:43:36.0979755+00:00 MCP request dock_options id=34
+2026-11-24T08:43:36.1412898+00:00 MCP response dock_options id=34 ms=28 bytes=12576
+2026-11-24T08:43:36.1550879+00:00 MCP request dock_options id=35
+2026-11-24T08:43:36.2126348+00:00 MCP response dock_options id=35 ms=42 bytes=12572
+2026-11-24T08:43:36.2315485+00:00 MCP request dock_drag_handle id=36
+2026-11-24T08:43:36.2515354+00:00 MCP response dock_drag_handle id=36 ms=2 bytes=775
+2026-11-24T08:43:36.2706088+00:00 Locked handle dockPositionLocked moved=False gripVisible=False
+2026-11-24T08:43:36.2866513+00:00 MCP request dock_options id=38
+2026-11-24T08:43:36.3368508+00:00 MCP response dock_options id=38 ms=31 bytes=12576
+2026-11-24T08:43:36.3533803+00:00 Movement coordinates 180,200 -> 228,232
+2026-11-24T08:43:36.3691619+00:00 PASS P1-08 four edges, floating movement and independent locks
+2026-11-24T08:43:36.3908569+00:00 MCP request dock_settings id=39
+2026-11-24T08:43:36.7890217+00:00 MCP response dock_settings id=39 ms=373 bytes=12530
+2026-11-24T08:43:36.8315458+00:00 MCP request dock_capture id=41
+2026-11-24T08:43:36.8817372+00:00 MCP response dock_capture id=41 ms=25 bytes=47813
+2026-11-24T08:43:36.9071047+00:00 MCP screenshot settings-appearance.png bytes=32796
+2026-11-24T08:43:36.9275228+00:00 MCP request dock_settings id=42
+2026-11-24T08:43:36.9756014+00:00 MCP response dock_settings id=42 ms=28 bytes=12530
+2026-11-24T08:43:36.9936770+00:00 MCP request dock_capture id=43
+2026-11-24T08:43:37.1215541+00:00 MCP response dock_capture id=43 ms=105 bytes=73218
+2026-11-24T08:43:37.1490089+00:00 MCP screenshot settings-items.png bytes=50631
+2026-11-24T08:43:37.1669371+00:00 MCP request dock_settings id=44
+2026-11-24T08:43:37.3143583+00:00 MCP response dock_settings id=44 ms=129 bytes=12530
+2026-11-24T08:43:37.3300816+00:00 MCP request dock_capture id=45
+2026-11-24T08:43:37.5746118+00:00 MCP response dock_capture id=45 ms=225 bytes=42858
+2026-11-24T08:43:37.6003451+00:00 MCP screenshot settings-position.png bytes=29376
+2026-11-24T08:43:37.6197490+00:00 MCP request dock_settings id=46
+2026-11-24T08:43:37.6593446+00:00 MCP response dock_settings id=46 ms=20 bytes=12530
+2026-11-24T08:43:37.6772419+00:00 MCP request dock_capture id=47
+2026-11-24T08:43:37.7280562+00:00 MCP response dock_capture id=47 ms=33 bytes=42553
+2026-11-24T08:43:37.7579057+00:00 MCP screenshot settings-general.png bytes=29299
+2026-11-24T08:43:37.7773940+00:00 MCP request dock_settings id=48
+2026-11-24T08:43:37.8133615+00:00 MCP response dock_settings id=48 ms=15 bytes=12532
+2026-11-24T08:43:37.8379203+00:00 MCP request dock_visibility id=50
+2026-11-24T08:43:37.8661539+00:00 MCP response dock_visibility id=50 ms=7 bytes=12532
+2026-11-24T08:43:37.8886296+00:00 MCP request dock_visibility id=52
+2026-11-24T08:43:37.9150040+00:00 MCP response dock_visibility id=52 ms=6 bytes=12532
+2026-11-24T08:43:37.9372586+00:00 PASS P1-11 settings lifecycle and visibility
+2026-11-24T08:43:37.9667161+00:00 MCP request dock_add id=55
+2026-11-24T08:43:37.9871143+00:00 MCP response dock_add id=55 ms=4 bytes=221
+2026-11-24T08:43:38.0183176+00:00 MCP request dock_add id=56
+2026-11-24T08:43:38.0334179+00:00 MCP response dock_add id=56 ms=1 bytes=226
+2026-11-24T08:43:38.0561421+00:00 PASS P1-11 invalid path and non-HTTP scheme are rejected
+2026-11-24T08:43:38.1825910+00:00 MCP stdin EOF processExitCode=0
+2026-11-24T08:43:38.2160148+00:00 MCP request initialize id=1
+2026-11-24T08:43:39.3209108+00:00 MCP response initialize id=1 ms=1087 bytes=171
+2026-11-24T08:43:39.3442291+00:00 MCP request tools/list id=2
+2026-11-24T08:43:39.3661950+00:00 MCP response tools/list id=2 ms=3 bytes=8984
+2026-11-24T08:43:39.3850252+00:00 MCP initialized protocol=2025-11-25 pid=3792 tools=29
+2026-11-24T08:43:39.4642047+00:00 PASS P1-09 clean restart preserves options, items, order and custom icon
+2026-11-24T08:43:39.4846607+00:00 MCP request dock_remove id=4
+2026-11-24T08:43:39.5443636+00:00 MCP response dock_remove id=4 ms=40 bytes=10788
+2026-11-24T08:43:39.5936683+00:00 EXE, LNK, TXT and PNG matched their original SHA-256. Test folder still exists.
+2026-11-24T08:43:39.6147691+00:00 PASS P1-10 remove reference and retain original hashes
+2026-11-24T08:43:39.7002399+00:00 MCP stdin EOF processExitCode=0
+2026-11-24T08:43:39.7229939+00:00 end failed=0 log=D:\myapp\desk-design\artifacts\p1-mcp-519628a511b4426baab596efa11c4c1e\mcp-results.log

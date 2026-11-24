@@ -236,7 +236,10 @@ public partial class SettingsWindow : Window
     {
         RefreshItems();
         if (Navigation.SelectedIndex == 6)
+        {
+            LayoutPage.RefreshGridMode();
             LayoutPage.RefreshGroups();
+        }
     }
 
     private void RefreshItems()

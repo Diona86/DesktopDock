@@ -98,7 +98,7 @@ def between(first, second):
     raise AssertionError(f"No measurable gap between owned windows: {first!r}, {second!r}")
 
 
-def hierarchy(client, checks, items, config, legacy_bytes, profile):
+def hierarchy(client, checks, items, config, legacy_bytes, profile, expected_schema_version):
     a, b, c, d, e, f, g, h, i, j, k, l, m, n = [item["id"] for item in items]
     first = current(client)
     checks.check(first["items"] == items and first["groups"] == [] and children(first) == [item["id"] for item in items]
@@ -108,8 +108,8 @@ def hierarchy(client, checks, items, config, legacy_bytes, profile):
     parent = direct["id"]
     backups = list(profile.glob("dock.v2-*.bak"))
     checks.check(len(backups) == 1 and backups[0].read_bytes() == legacy_bytes
-                 and json.loads(config.read_text(encoding="utf-8"))["schemaVersion"] == 3,
-                 "schema 2 to 3 write preserves byte-exact backup")
+                 and json.loads(config.read_text(encoding="utf-8"))["schemaVersion"] == expected_schema_version,
+                 f"schema 2 to {expected_schema_version} write preserves byte-exact backup")
     child = client.data("dock_p3_create", {"name": "二级工具", "parentId": parent})["id"]
     before = config.read_bytes()
     for invalid in ({"name": "三级", "parentId": child}, {"name": "不合法", "parentId": a}):
@@ -300,12 +300,12 @@ def reference_safety(client, checks, fixtures, config, parent, child, joined, re
                  "removing group references leaves all original files and the icon SHA-256 unchanged")
 
 
-def exercise(executable, run_directory, checks):
+def exercise(executable, run_directory, checks, expected_schema_version):
     profile, fixtures, icon, items, config, legacy = make_profile(run_directory)
     with p2.DockClient(executable, profile) as client:
         names = {tool["name"] for tool in client.rpc("tools/list")["tools"]}
         checks.check(TOOLS <= names, "P3 tools advertised on the existing stdio MCP interface", f"total={len(names)}")
-        parent, child, joined, remaining = hierarchy(client, checks, items, config, legacy, profile)
+        parent, child, joined, remaining = hierarchy(client, checks, items, config, legacy, profile, expected_schema_version)
         layouts(client, checks, run_directory, parent, icon)
         interaction(client, checks, parent, child)
         reference_safety(client, checks, fixtures, config, parent, child, joined, remaining)
@@ -320,8 +320,9 @@ def exercise(executable, run_directory, checks):
 def main():
     sys.stdout.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--executable", type=Path, default=ROOT / "artifacts/DesktopDock-P3-win-x64/DesktopDock.exe")
+    parser.add_argument("--executable", type=Path, default=ROOT / "artifacts/DesktopDock-P3-Grid-R2-win-x64/DesktopDock.exe")
     parser.add_argument("--run-directory", type=Path, default=ROOT / "artifacts" / f"p3-mcp-{uuid.uuid4().hex}")
+    parser.add_argument("--expected-schema-version", type=int, default=4)
     args = parser.parse_args()
     executable = args.executable.resolve(strict=True)
     run_directory = args.run_directory.resolve()
@@ -329,7 +330,7 @@ def main():
     checks = p2.Checks(run_directory / "mcp-results.log")
     checks.log(f"START exe={executable} directory={run_directory}")
     try:
-        exercise(executable, run_directory, checks)
+        exercise(executable, run_directory, checks, args.expected_schema_version)
     except (AssertionError, KeyError, RuntimeError, OSError, ValueError, TypeError, IndexError) as error:
         checks.log(f"FAIL {error}")
         checks.log(f"END passed={checks.passed} failed=1")

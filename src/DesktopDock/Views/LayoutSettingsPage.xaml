@@ -18,6 +18,7 @@
                         <ComboBoxItem Content="多行网格" />
                         <ComboBoxItem Content="多列网格" />
                         <ComboBoxItem Content="分组展开" />
+                        <ComboBoxItem Content="自由网格" />
                     </ComboBox>
                 </StackPanel>
                 <StackPanel Grid.Column="1">
@@ -60,7 +61,8 @@
                     <TextBlock Style="{StaticResource FieldHint}" Text="0–48 DIP" />
                 </StackPanel>
             </Grid>
-            <TextBlock Style="{StaticResource FieldHint}" Margin="0,6,0,0" Text="图标尺寸可在「Dock 外观」调整。" />
+            <TextBlock Style="{StaticResource FieldHint}" Margin="0,6,0,0" TextWrapping="Wrap"
+                       Text="拖动 Dock 边缘进入自由网格。自由网格保留空位，窗口尺寸由行列决定。切换到其他布局会恢复自动排列。图标尺寸可在「Dock 外观」调整。" />
 
             <Border Margin="0,15,0,12" Height="1" Background="{StaticResource Rule}" />
             <TextBlock Style="{StaticResource FieldLabel}" Text="分组" />

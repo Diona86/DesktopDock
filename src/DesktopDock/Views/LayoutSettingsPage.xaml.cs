@@ -6,7 +6,9 @@ namespace DesktopDock;
 
 public partial class LayoutSettingsPage : UserControl
 {
+    private const int FreeGridIndex = (int)DockLayoutMode.GroupExpand + 1;
     private DockSession? session;
+    private int loadedMode;
 
     public LayoutSettingsPage() => InitializeComponent();
 
@@ -16,7 +18,7 @@ public partial class LayoutSettingsPage : UserControl
     {
         session = currentSession;
         DockLayoutOptions options = currentSession.Options.Layout;
-        ModeInput.SelectedIndex = (int)options.Mode;
+        ModeInput.SelectedIndex = loadedMode = ModeIndex(options);
         DirectionInput.SelectedIndex = (int)options.ExpansionDirection;
         MaxIconsInput.Text = options.MaxVisibleIcons.ToString(CultureInfo.CurrentCulture);
         GridTracksInput.Text = options.GridTracks.ToString(CultureInfo.CurrentCulture);
@@ -27,7 +29,8 @@ public partial class LayoutSettingsPage : UserControl
 
     internal DockLayoutOptions ReadOptions(DockLayoutOptions basis) => basis with
     {
-        Mode = (DockLayoutMode)ModeInput.SelectedIndex,
+        Mode = ModeInput.SelectedIndex == FreeGridIndex ? basis.Mode : (DockLayoutMode)ModeInput.SelectedIndex,
+        Grid = ModeInput.SelectedIndex == FreeGridIndex ? basis.Grid ?? session?.ResolveGrid(3, 3) : null,
         ExpansionDirection = (DockExpandDirection)DirectionInput.SelectedIndex,
         MaxVisibleIcons = ReadInteger(MaxIconsInput, "图标上限"),
         GridTracks = ReadInteger(GridTracksInput, "网格行 / 列数"),
@@ -62,6 +65,18 @@ public partial class LayoutSettingsPage : UserControl
         EmptyGroups.Visibility = rows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         UpdateButtons();
     }
+
+    internal void RefreshGridMode()
+    {
+        if (session == null)
+            return;
+        int savedMode = ModeIndex(session.Options.Layout);
+        if (ModeInput.SelectedIndex == loadedMode)
+            ModeInput.SelectedIndex = savedMode;
+        loadedMode = savedMode;
+    }
+
+    private static int ModeIndex(DockLayoutOptions options) => options.Grid != null ? FreeGridIndex : (int)options.Mode;
 
     private void SelectGroup(object sender, SelectionChangedEventArgs e) => UpdateButtons();
 

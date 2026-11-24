@@ -33,6 +33,7 @@ public sealed record DockOptions
     public DockPlacement Placement { get; init; } = DockPlacement.Bottom;
     public double? FloatingLeft { get; init; }
     public double? FloatingTop { get; init; }
+    public string? FloatingMonitorId { get; init; }
     public bool FloatingVertical { get; init; }
     public double IconSize { get; init; } = 40;
     public double DockThickness { get; init; } = 64;

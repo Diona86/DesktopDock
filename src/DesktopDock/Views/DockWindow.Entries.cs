@@ -53,8 +53,11 @@ public partial class DockWindow
         });
         button.PreviewMouseLeftButtonDown += (_, e) =>
         {
-            pressedItem = button;
-            pressPoint = e.GetPosition(button);
+            if (!IsResizeThumb(e.OriginalSource as DependencyObject))
+            {
+                pressedItem = button;
+                pressPoint = e.GetPosition(button);
+            }
         };
         button.PreviewMouseLeftButtonUp += (_, _) => pressedItem = null;
         button.LostMouseCapture += (_, _) => { if (pressedItem == button) pressedItem = null; };
@@ -128,7 +131,7 @@ public partial class DockWindow
         return true;
     }
 
-    private Button? RootEntryButton(Guid id) => ItemStrip.Children.OfType<Button>().FirstOrDefault(button => button.Tag is Guid key && key == id);
+    private Button? RootEntryButton(Guid id) => RenderedItemButtons().FirstOrDefault(button => button.Tag is Guid key && key == id);
 
     private Rect EntryScreenBounds(Button button)
     {

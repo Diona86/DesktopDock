@@ -18,6 +18,8 @@ public partial class App
             """{"type":"object","properties":{"id":{"type":"string"},"parentId":{"type":["string","null"]},"targetId":{"type":["string","null"]},"after":{"type":"boolean"},"center":{"type":"boolean"}},"required":["id"],"additionalProperties":false}"""),
         new("dock_p3_layout", "Set persisted Dock layout options in the test profile.",
             """{"type":"object","properties":{"layout":{"type":"object"}},"required":["layout"],"additionalProperties":false}"""),
+        new("dock_p3_grid", "Run the Dock grid's resize, placement or tile stretch path and read the rendered results.",
+            """{"type":"object","properties":{"action":{"enum":["read","resize","move","stretch"]},"id":{"type":"string"},"column":{"type":"integer","minimum":1},"row":{"type":"integer","minimum":1},"columns":{"type":"number","minimum":1},"rows":{"type":"number","minimum":1}},"required":["action"],"additionalProperties":false}"""),
         new("dock_p3_open", "Open the real WPF panel for a group.",
             """{"type":"object","properties":{"id":{"type":"string"}},"required":["id"],"additionalProperties":false}"""),
         new("dock_p3_back", "Close the current group panel, leaving its parent visible if present.",
@@ -58,6 +60,9 @@ public partial class App
             case "dock_p3_layout":
                 profile.UpdateOptions(profile.Options with { Layout = Argument<DockLayoutOptions>(args, "layout") });
                 break;
+            case "dock_p3_grid":
+                return McpReply(owner.TestTileGrid(Argument<string>(args, "action"), Optional<Guid?>(args, "id", null),
+                    Optional(args, "column", 0), Optional(args, "row", 0), Optional(args, "columns", 1d), Optional(args, "rows", 1d)));
             case "dock_p3_open":
                 owner.OpenGroup(Argument<Guid>(args, "id"));
                 break;

@@ -15,9 +15,11 @@ public partial class DockWindow
             visible = IsVisible,
             nativeVisible = DockWindowPosition.IsNativeVisible(this),
             interactionMenus = InteractionMenuBounds(),
-            layout = new { mode = session.Options.Layout.Mode, rows = ItemStrip.Rows, columns = ItemStrip.Columns,
+            layout = new { mode = session.Options.Layout.Mode, rows = HasTileGrid ? TileRows : ItemStrip.Rows,
+                columns = HasTileGrid ? TileColumns : ItemStrip.Columns,
                 visibleLength = vertical ? Viewport.ActualHeight : Viewport.ActualWidth,
-                scrolling = ItemScroll.ScrollableWidth > 0 || ItemScroll.ScrollableHeight > 0 },
+                scrolling = HasTileGrid ? GridScroll.ScrollableWidth > 0 || GridScroll.ScrollableHeight > 0
+                    : ItemScroll.ScrollableWidth > 0 || ItemScroll.ScrollableHeight > 0 },
             transparent = AllowsTransparency,
             background = Background?.ToString(),
             surfaceBackground = Surface.Background?.ToString(),
@@ -173,7 +175,8 @@ public partial class DockWindow
         };
     }
 
-    private IEnumerable<Button> RenderedItemButtons() => ItemStrip.Children.OfType<Button>().Where(button => button.Tag is Guid);
+    private IEnumerable<Button> RenderedItemButtons() =>
+        (HasTileGrid ? TileCanvas.Children : ItemStrip.Children).OfType<Button>().Where(button => button.Tag is Guid);
 
     private Guid[] RenderedItemIds() => RenderedItemButtons().Select(button => (Guid)button.Tag!).ToArray();
 

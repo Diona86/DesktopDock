@@ -37,7 +37,10 @@ public sealed partial class DockSession
                     entries.Add(entry);
                 }
             }
-            return OrderTree(state with { Groups = [.. state.Groups, group], Entries = [.. entries] });
+            return OrderTree(ReplaceGridTile(state, targetId, group.Id, useExistingSpan: true) with
+            {
+                Groups = [.. state.Groups, group], Entries = [.. entries]
+            });
         });
         return group;
     }
@@ -85,7 +88,9 @@ public sealed partial class DockSession
                     else if (entry.ParentId != id)
                         entries.Add(entry);
                 }
-                return OrderTree(state with { Groups = state.Groups.Where(group => group.Id != id).ToArray(), Entries = [.. entries] });
+                DockEntry? promoted = children[id].FirstOrDefault();
+                Configuration positioned = promoted is null ? state : ReplaceGridTile(state, id, promoted.Id, useExistingSpan: false);
+                return OrderTree(positioned with { Groups = state.Groups.Where(group => group.Id != id).ToArray(), Entries = [.. entries] });
             }
 
             HashSet<Guid> removed = Traverse(children, id).Select(entry => entry.Id).ToHashSet();

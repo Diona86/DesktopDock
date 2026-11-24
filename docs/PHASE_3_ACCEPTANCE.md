@@ -24,3 +24,15 @@
 - Windows 11 上用 `python tests/P3/Test-DockP3.py` 复现 MCP 验收。测试使用独立配置，输出包括 11 张应用内 WPF PNG。 [MCP 接入](P1_MCP.md) · [测试脚本](../tests/P3/Test-DockP3.py)
 
 阶段 3 已交付。P4 等待确认。 [计划](PHASE_3_PLAN.md) · [项目 TODO](../TODO.md)
+
+## P3 手测反馈修订
+
+- 自动隐藏时，非自由悬浮的 Dock 从实际触发边缘靠指针的位置弹出，并约束在目标显示器工作区。弹出后位置固定。自由悬浮使用已保存的显示器与坐标。
+- 设置入口位于通知区域和 Dock 空白处的右键菜单。Dock 正面撤下专用设置按钮。
+- 拖动 Dock 四边或四角可启用自由网格。松手时两轴各自四舍五入，空位保留。也可从「设置 → 布局与分组」选择自由网格。缩小窗口受最外侧已占用格限制。
+- 拖图标主体可移动到指定空格。悬停图标后，拖右下角手柄改变占格宽高。贴近屏幕下边缘或右边缘时，往屏幕内拖。拉伸碰到其他图标时保持原布局。展开面板继续使用各组原有的展开方式。
+- 行列、空格位置和占格尺寸随配置写入并在重启后恢复。旧版自动布局在第一次调整之前继续使用。配置首次写入时升级到版本 4 并备份原文件。
+
+Windows 11 自包含修订版位于 `artifacts/DesktopDock-P3-Grid-R2-win-x64/DesktopDock.exe`。用 `python tests/P3/Test-DockP3Grid.py` 复跑应用内验收。自动化检查使用真实 WPF 控件与 HWND，以及应用内受控输入数据。实体鼠标的边框捕获、拖放和跨屏触发仍由手测确认。
+
+修订专项 36 项通过。P1、P2、P3 分别通过 12、49、56 项回归。另查看了自由网格 WPF 截图，并在设置窗口保持打开时确认布局选择从「单行」同步为「自由网格」。 [专项日志](p3-evidence/grid-mcp.log) · [P1 回归](p3-evidence/grid-p1-regression.log) · [P2 回归](p3-evidence/grid-p2-regression.log) · [P3 回归](p3-evidence/grid-p3-regression.log)

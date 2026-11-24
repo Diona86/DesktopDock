@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace DesktopDock;
 
 public enum DockGroupExpandMode { Grid, Fan, Horizontal, Vertical }
@@ -24,6 +26,8 @@ public sealed record DockLayoutOptions
     public double PanelSpacing { get; init; } = 8;
     public int GridTracks { get; init; } = 2;
     public DockExpandDirection ExpansionDirection { get; init; } = DockExpandDirection.Auto;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public DockGrid? Grid { get; init; }
 
     internal void Validate()
     {
@@ -37,5 +41,6 @@ public sealed record DockLayoutOptions
             throw new ArgumentException($"面板间距须在 0 到 {MaxPanelSpacing} DIP 之间。");
         if (GridTracks is < MinGridTracks or > MaxGridTracks)
             throw new ArgumentException($"网格行数或列数须在 {MinGridTracks} 到 {MaxGridTracks} 之间。");
+        Grid?.Validate();
     }
 }

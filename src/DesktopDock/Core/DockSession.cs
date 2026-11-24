@@ -5,7 +5,7 @@ namespace DesktopDock;
 
 public sealed partial class DockSession : IDisposable
 {
-    private const int CurrentVersion = 3;
+    private const int CurrentVersion = 4;
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -122,7 +122,14 @@ public sealed partial class DockSession : IDisposable
     public void UpdateOptions(DockOptions options)
     {
         options.Validate();
-        Change(state => state.Options == options ? state : state with { Options = options });
+        Change(state =>
+        {
+            if (state.Options == options)
+                return state;
+            if (options.Layout.Grid is DockGrid grid && grid != state.Options.Layout.Grid)
+                ValidateGridEntries(state, grid);
+            return state with { Options = options };
+        });
     }
 
     public void Dispose()
@@ -164,6 +171,9 @@ public sealed partial class DockSession : IDisposable
             if (ReferenceEquals(next, _state))
                 return;
 
+            if (next.Entries != _state.Entries || next.Options.Layout.Grid != _state.Options.Layout.Grid)
+                next = SynchronizeGrid(next);
+
             int? migrateFrom = _state.SchemaVersion < CurrentVersion ? _state.SchemaVersion : null;
             next = next with { SchemaVersion = CurrentVersion };
             Write(next, migrateFrom);
@@ -201,12 +211,17 @@ public sealed partial class DockSession : IDisposable
                 DockTargets.ValidateReference(item);
             }
 
-            if (number < CurrentVersion)
+            if (number < 3)
                 state = state with { Groups = [], Entries = state.Items.Select(item => new DockEntry(item.Id)).ToArray() };
             if (state.Groups is null || state.Entries is null)
                 throw new InvalidDataException("Dock 配置缺少分组或排序数据，原文件已保留。");
             foreach (DockGroup group in state.Groups)
                 ValidateGroup(group);
+            if (state.Options.Layout.Grid is DockGrid grid)
+            {
+                ValidateGridEntries(state, grid);
+                return SynchronizeGrid(OrderTree(state));
+            }
             return OrderTree(state);
         }
         catch (FileNotFoundException)

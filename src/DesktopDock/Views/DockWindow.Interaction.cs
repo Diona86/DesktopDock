@@ -10,6 +10,7 @@ public partial class DockWindow
 {
     private readonly List<ContextMenu> openMenus = [];
     private DockMonitor? revealMonitor;
+    private DockWindowPosition.RevealAnchor? revealAnchor;
     private Rect lastMenuBounds = Rect.Empty;
     private long lastMenuClosedAt = long.MinValue;
 
@@ -17,12 +18,16 @@ public partial class DockWindow
 
     private DockWindowPosition.WorkArea GetDockWorkArea() => DockWindowPosition.GetWorkArea(this, revealMonitor);
 
-    internal void SetRevealMonitor(DockMonitor? monitor)
+    internal void SetRevealPlacement(DockMonitor? monitor, DockWindowPosition.RevealAnchor? anchor)
     {
-        if (revealMonitor == monitor)
-            return;
+        bool monitorChanged = revealMonitor != monitor;
+        bool anchorChanged = revealAnchor != anchor;
         revealMonitor = monitor;
-        Refresh();
+        revealAnchor = anchor;
+        if (monitorChanged)
+            Refresh();
+        else if (anchorChanged)
+            QueuePlacement();
     }
 
     internal void PrepareReveal()
@@ -36,7 +41,7 @@ public partial class DockWindow
     {
         if (!IsVisible)
             return false;
-        if (moveStart.HasValue || draggingItem.HasValue)
+        if (moveStart.HasValue || draggingItem.HasValue || IsGridResizing)
             return true;
         DockWindowPosition.TryGetBounds(this, out Rect dockBounds);
         var point = new Point(x, y);
@@ -103,7 +108,9 @@ public partial class DockWindow
         if (!DockWindowPosition.TryGetBounds(this, out Rect bounds))
             return false;
 
-        return Bridges(new Point(x, y), bounds, new Rect(zone.Left, zone.Top, zone.Right - zone.Left, zone.Bottom - zone.Top));
+        Rect zoneBounds = new(zone.Left, zone.Top, zone.Right - zone.Left, zone.Bottom - zone.Top);
+        // The taskbar can leave a larger gap between its screen edge and the usable work area.
+        return Bridges(new Point(x, y), bounds, zoneBounds, revealAnchor.HasValue ? double.PositiveInfinity : 64);
     }
 
     internal void CloseInteractionMenus()

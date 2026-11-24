@@ -1,3 +1,4 @@
+using System.Windows;
 using System.Windows.Threading;
 
 namespace DesktopDock;
@@ -35,6 +36,7 @@ internal sealed class DockInteractionRuntime : IDisposable
     private long foregroundSamples;
     private long automaticOpens;
     private bool modalInteraction;
+    private (string MonitorId, DockWindowPosition.RevealAnchor Anchor)? hotZoneReveal;
 
     internal DockInteractionRuntime(DockWindow dock, DockSession session, bool validationMode, Action<bool> render,
         Func<DockHotkeyAction, bool> captureShortcut)
@@ -215,8 +217,11 @@ internal sealed class DockInteractionRuntime : IDisposable
     private void OptionsChanged(object? sender, EventArgs args)
     {
         DockOptions next = session.Options;
-        if (next.Behavior == options.Behavior && next.Placement == options.Placement)
+        if (next.Behavior == options.Behavior && next.Placement == options.Placement &&
+            next.FloatingMonitorId == options.FloatingMonitorId)
             return;
+        if (next.Placement != options.Placement)
+            hotZoneReveal = null;
         options = next;
         visibility.SetMode(options.Behavior.Mode);
         visibility.ResetDwell();
@@ -335,10 +340,14 @@ internal sealed class DockInteractionRuntime : IDisposable
         if (previous == DockVisibilityState.Hidden && visibility.State == DockVisibilityState.Revealed)
         {
             // Recheck before the HWND becomes visible even if the dwell used a cached observation.
-            if (testObservation == null && (monitor == null || !ReadForeground(monitor, now).CanAutoReveal(options.Behavior.ApplicationRules)))
+            if (zone == null || monitor == null ||
+                (testObservation == null && !ReadForeground(monitor, now).CanAutoReveal(options.Behavior.ApplicationRules)))
                 visibility.Dismiss();
             else
+            {
+                hotZoneReveal = (monitor.Id, new DockWindowPosition.RevealAnchor(zone.Zone.Edge, new Point(x, y)));
                 automaticOpens++;
+            }
         }
         if (visibility.State != previous)
             Publish();
@@ -346,17 +355,18 @@ internal sealed class DockInteractionRuntime : IDisposable
 
     private void Publish()
     {
+        if (!visibility.IsVisible)
+            hotZoneReveal = null;
         bool temporary = visibility.State is DockVisibilityState.Temporary or DockVisibilityState.Revealed or DockVisibilityState.Locked;
-        if (visibility.IsVisible)
-        {
-            DockMonitor? monitor = temporary ? physicalMonitors.FirstOrDefault(m => m.Id == visibility.MonitorId) : null;
-            dock.SetRevealMonitor(monitor);
-            dock.Topmost = temporary && CanFloatAbove(foreground);
-        }
-        else
-        {
-            dock.Topmost = false;
-        }
+        bool floating = options.Placement == DockPlacement.Floating;
+        DockMonitor? primary = physicalMonitors.FirstOrDefault();
+        DockMonitor? zoneMonitor = !floating && hotZoneReveal is { } reveal
+            ? Monitors.FirstOrDefault(m => m.Id == reveal.MonitorId) : null;
+        DockMonitor? preferred = floating
+            ? physicalMonitors.FirstOrDefault(m => m.Id == options.FloatingMonitorId)
+            : temporary ? physicalMonitors.FirstOrDefault(m => m.Id == visibility.MonitorId) : null;
+        dock.SetRevealPlacement(zoneMonitor ?? preferred ?? primary, zoneMonitor == null ? null : hotZoneReveal?.Anchor);
+        dock.Topmost = temporary && CanFloatAbove(foreground);
         render(visibility.IsVisible);
         UpdateObservation();
     }

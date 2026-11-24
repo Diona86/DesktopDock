@@ -14,7 +14,6 @@ public partial class DockWindow : Window
 {
     private const double EdgeGap = 10;
     private const double GripLength = 26;
-    private const double SettingsLength = 36;
     private const string ItemDragFormat = "DesktopDock.ItemId";
 
     private readonly DockSession session;
@@ -51,7 +50,7 @@ public partial class DockWindow : Window
         InitializeComponent();
         buttonStyle = (Style)FindResource("DockButton");
 
-        SettingsButton.Click += (_, _) => showSettings();
+        InitializeGridResize();
         Surface.ContextMenu = TrackInteractionMenu(new ContextMenu());
         Surface.ContextMenu.Items.Add(CreateMenuItem("创建分组", () => RunGroupDialog(() => DockGroupDialogs.Create(this, session, null))));
         Surface.ContextMenu.Items.Add(CreateMenuItem("打开设置", showSettings));
@@ -69,6 +68,7 @@ public partial class DockWindow : Window
         MoveHandle.PreviewMouseLeftButtonUp += EndMove;
         MoveHandle.LostMouseCapture += (_, _) => CancelMove();
         ItemScroll.PreviewMouseWheel += ScrollItems;
+        GridScroll.PreviewMouseWheel += ScrollItems;
         PreviewDragEnter += PreviewDockDrop;
         PreviewDragOver += PreviewDockDrop;
         PreviewDragLeave += (_, _) => HideDropIndicator();
@@ -155,7 +155,7 @@ public partial class DockWindow : Window
         double side = Math.Min(options.IconSize + 8, Math.Max(1, (thickness - (padding + 1) * 2) / layoutTracks - crossSpacing));
         double icon = Math.Min(options.IconSize, Math.Max(1, side - 2));
         double emptyItemLength = vertical ? Math.Max(34, side) : 92;
-        double chrome = (padding + 1) * 2 + GripLength + SettingsLength;
+        double chrome = (padding + 1) * 2 + GripLength;
         int mainCells = (int)Math.Ceiling(Math.Max(1, iconCount) / (double)layoutTracks);
         double cell = side + layout.IconSpacing;
         double desired = chrome + (iconCount == 0 ? emptyItemLength : mainCells * cell);
@@ -171,14 +171,12 @@ public partial class DockWindow : Window
         Surface.Width = vertical ? thickness : length;
         Surface.Height = vertical ? length : thickness;
         DockPanel.SetDock(GripZone, vertical ? Dock.Top : Dock.Left);
-        DockPanel.SetDock(SettingsButton, vertical ? Dock.Bottom : Dock.Right);
         GripZone.Width = vertical ? double.NaN : GripLength;
         GripZone.Height = vertical ? GripLength : double.NaN;
         MoveHandle.Width = vertical ? 24 : 20;
         MoveHandle.Height = vertical ? 20 : 24;
         MoveHandle.Visibility = Visibility.Hidden;
         GripDots.Orientation = vertical ? Orientation.Horizontal : Orientation.Vertical;
-        SettingsButton.Margin = vertical ? new Thickness(0, 6, 0, 0) : new Thickness(6, 0, 0, 0);
         ItemStrip.Rows = vertical ? mainCells : layoutTracks;
         ItemStrip.Columns = vertical ? layoutTracks : mainCells;
         ItemStrip.HorizontalAlignment = vertical ? HorizontalAlignment.Center : HorizontalAlignment.Left;
@@ -186,7 +184,8 @@ public partial class DockWindow : Window
         ItemScroll.HorizontalScrollBarVisibility = vertical ? ScrollBarVisibility.Disabled : ScrollBarVisibility.Hidden;
         ItemScroll.VerticalScrollBarVisibility = vertical ? ScrollBarVisibility.Hidden : ScrollBarVisibility.Disabled;
 
-        RebuildItems(entries, side, icon, emptyItemLength, work.Scale);
+        if (!RefreshTileGrid(work))
+            RebuildItems(entries, side, icon, emptyItemLength, work.Scale);
         QueuePlacement();
         if (openGroup && IsVisible)
             QueueGroupLayoutOpen();
@@ -220,6 +219,7 @@ public partial class DockWindow : Window
         foreach (DockEntry entry in entries)
         {
             Button button = CreateEntryButton(entry.Id, icon, side, scale, iconLoads.Token);
+            SetIsResizableTile(button, true);
             button.Margin = new Thickness(vertical && layoutTracks == 1 ? 0 : gap, !vertical && layoutTracks == 1 ? 0 : gap,
                 vertical && layoutTracks == 1 ? 0 : gap, !vertical && layoutTracks == 1 ? 0 : gap);
             ItemStrip.Children.Add(button);
@@ -296,7 +296,7 @@ public partial class DockWindow : Window
 
     private void BeginReorder(Button source, Guid id, MouseEventArgs e)
     {
-        if (pressedItem != source || e.LeftButton != MouseButtonState.Pressed)
+        if (IsGridResizing || pressedItem != source || e.LeftButton != MouseButtonState.Pressed)
             return;
 
         Vector delta = e.GetPosition(source) - pressPoint;
@@ -412,7 +412,7 @@ public partial class DockWindow : Window
         Button? nearest = null;
         double distance = double.PositiveInfinity;
         double fraction = 0;
-        foreach (Button item in ItemStrip.Children.OfType<Button>())
+        foreach (Button item in RenderedItemButtons())
         {
             if (item.Tag is not Guid || item.ActualWidth <= 0 || item.ActualHeight <= 0)
                 continue;
@@ -430,11 +430,14 @@ public partial class DockWindow : Window
             }
         }
 
-        return (nearest, fraction >= .5, false);
+        return HasTileGrid ? (null, false, false) : (nearest, fraction >= .5, false);
     }
 
     private bool ShowItemDropFeedback(Point pointer, Guid source)
     {
+        if (HasTileGrid)
+            return DropOnTileGrid(pointer, source, preview: true);
+
         (Button? target, bool after, bool center) = GetInsertion(pointer);
         if (!CanDropEntry(source, null, target?.Tag as Guid?, center))
             return false;
@@ -446,6 +449,9 @@ public partial class DockWindow : Window
 
     private bool CommitItemDrop(Guid source, Point pointer)
     {
+        if (HasTileGrid)
+            return DropOnTileGrid(pointer, source, preview: false);
+
         (Button? target, bool after, bool center) = GetInsertion(pointer);
         return CommitEntryDrop(source, null, target?.Tag as Guid?, after, center);
     }
@@ -488,6 +494,16 @@ public partial class DockWindow : Window
 
     private void ScrollItems(object sender, MouseWheelEventArgs e)
     {
+        if (HasTileGrid)
+        {
+            if (GridScroll.ScrollableWidth > 0 && (GridScroll.ScrollableHeight == 0 || Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)))
+            {
+                GridScroll.ScrollToHorizontalOffset(GridScroll.HorizontalOffset - e.Delta / 3d);
+                e.Handled = true;
+            }
+            return;
+        }
+
         if (!vertical && ItemScroll.ScrollableWidth > 0)
         {
             ItemScroll.ScrollToHorizontalOffset(ItemScroll.HorizontalOffset - e.Delta / 3d);
@@ -500,6 +516,13 @@ public partial class DockWindow : Window
         long now = Environment.TickCount64;
         if (now - lastDragScroll < 65)
             return;
+
+        if (HasTileGrid)
+        {
+            ScrollTileGridDuringDrag(pointer);
+            lastDragScroll = now;
+            return;
+        }
 
         double axis = vertical ? pointer.Y : pointer.X;
         double length = vertical ? Viewport.ActualHeight : Viewport.ActualWidth;
@@ -580,7 +603,8 @@ public partial class DockWindow : Window
             Placement = DockPlacement.Floating,
             FloatingVertical = vertical,
             FloatingLeft = (bounds.Left - work.Pixels.Left) / work.Scale,
-            FloatingTop = (bounds.Top - work.Pixels.Top) / work.Scale
+            FloatingTop = (bounds.Top - work.Pixels.Top) / work.Scale,
+            FloatingMonitorId = revealMonitor?.Id
         });
         return true;
     }
@@ -610,6 +634,8 @@ public partial class DockWindow : Window
             return;
 
         DockWindowPosition.WorkArea work = GetDockWorkArea();
+        if (TryPlaceGridResize(bounds))
+            return;
         Rect area = work.Pixels;
         double inset = EdgeGap * work.Scale;
         double centeredX = area.Left + (area.Width - bounds.Width) / 2;
@@ -625,6 +651,8 @@ public partial class DockWindow : Window
                 options.FloatingTop is double top ? area.Top + top * work.Scale : centeredY),
             _ => new Point(centeredX, area.Bottom - bounds.Height - inset)
         };
+        if (revealAnchor is { } anchor && options.Placement != DockPlacement.Floating)
+            desired = anchor.Inward(bounds.Size, inset);
 
         DockWindowPosition.Move(this, work.Clamp(desired, bounds.Size));
     }

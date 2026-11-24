@@ -10,6 +10,17 @@ internal static class DockWindowPosition
     private const uint DefaultToPrimary = 1;
     private const uint NoSizeNoOrderNoActivation = 0x0001 | 0x0004 | 0x0010;
 
+    internal readonly record struct RevealAnchor(HotZoneEdge Edge, Point Pointer)
+    {
+        internal Point Inward(Size size, double inset) => Edge switch
+        {
+            HotZoneEdge.Top => new Point(Pointer.X - size.Width / 2, Pointer.Y + inset),
+            HotZoneEdge.Left => new Point(Pointer.X + inset, Pointer.Y - size.Height / 2),
+            HotZoneEdge.Right => new Point(Pointer.X - size.Width - inset, Pointer.Y - size.Height / 2),
+            _ => new Point(Pointer.X - size.Width / 2, Pointer.Y - size.Height - inset)
+        };
+    }
+
     internal readonly record struct WorkArea(Rect Pixels, double Scale)
     {
         internal double Width => Pixels.Width / Scale;
