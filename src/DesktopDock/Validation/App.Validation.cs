@@ -36,6 +36,8 @@ public partial class App
             """{"type":"object","properties":{"visible":{"type":"boolean"}},"required":["visible"],"additionalProperties":false}"""),
         new("dock_settings", "Open, close or navigate the real settings window.",
             """{"type":"object","properties":{"visible":{"type":"boolean"},"page":{"enum":["appearance","items","position","general","hotZones","shortcuts","layout"]}},"required":["visible"],"additionalProperties":false}"""),
+        new("dock_update_view", "Read update controls or start the same check as the settings button in the isolated MCP session.",
+            """{"type":"object","properties":{"check":{"type":"boolean"}},"additionalProperties":false}"""),
         new("dock_drag_item", "Exercise in-app drop placement, feedback and order persistence without injecting global pointer events.",
             """{"type":"object","properties":{"id":{"type":"string","format":"uuid"},"targetId":{"type":"string","format":"uuid"},"after":{"type":"boolean"}},"required":["id","targetId","after"],"additionalProperties":false}"""),
         new("dock_drag_handle", "Exercise the movement handle's native placement and locks without injecting global pointer events.",
@@ -154,6 +156,12 @@ public partial class App
                     settings?.Close();
                 }
                 break;
+            case "dock_update_view":
+                if (settings?.IsVisible != true)
+                    throw new ArgumentException("Open the settings window first.");
+                if (Optional(args, "check", false))
+                    _ = settings.CheckForUpdatesAsync();
+                return McpReply(settings.ReadUpdateState());
             case "dock_drag_item":
                 return McpReply(testDock.TestDragItem(Argument<Guid>(args, "id"), Argument<Guid>(args, "targetId"), Argument<bool>(args, "after")));
             case "dock_drag_handle":

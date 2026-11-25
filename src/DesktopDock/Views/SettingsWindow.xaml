@@ -130,6 +130,15 @@
                     <CheckBox x:Name="StartupVisibilityInput" Content="常驻模式启动时显示 Dock" Margin="0,9,0,13" />
                     <CheckBox x:Name="GlobalLockInput" Content="全局锁定 Dock 位置" Margin="0,0,0,13" />
                     <TextBlock Style="{StaticResource FieldHint}" Text="关闭设置窗口后，Dock 会继续运行。可通过通知区域显示 Dock 或退出。" />
+                    <Separator Margin="0,13,0,9" Background="{StaticResource Rule}" />
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="软件更新" />
+                    <TextBlock x:Name="InstalledVersionText" Style="{StaticResource FieldHint}" Margin="0,5,0,8" />
+                    <WrapPanel>
+                        <Button x:Name="CheckForUpdatesButton" Content="检查更新" Click="CheckForUpdates" Margin="0,0,8,6" />
+                        <Button x:Name="OpenReleaseButton" Content="打开 GitHub Releases" Click="OpenRelease" Margin="0,0,0,6" />
+                    </WrapPanel>
+                    <TextBlock x:Name="UpdateStatusText" Style="{StaticResource FieldHint}" TextWrapping="Wrap"
+                               AutomationProperties.LiveSetting="Polite" />
                     <StackPanel x:Name="DesktopSystemControls" Visibility="Collapsed" Margin="0,22,0,0">
                         <TextBlock Style="{StaticResource FieldLabel}" Text="Windows 集成" />
                         <CheckBox x:Name="WindowsStartupInput" Content="登录 Windows 时启动 Desktop Dock"

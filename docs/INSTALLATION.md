@@ -1,9 +1,9 @@
 # 安装、升级与卸载
 
-Desktop Dock 1.0.0 面向 Windows 11 x64。安装包按当前用户安装，默认程序目录为 `%LOCALAPPDATA%\Programs\Desktop Dock`。可选择目录、桌面快捷方式和登录启动。程序自带运行时。
+Desktop Dock 面向 Windows 11 x64。安装包按当前用户安装，默认程序目录为 `%LOCALAPPDATA%\Programs\Desktop Dock`。可选择目录、桌面快捷方式和登录启动。程序自带运行时。
 
 1. 如有旧版正在运行，先从其托盘菜单退出。
-2. 运行 `DesktopDock-1.0.0-win-x64-setup.exe`，阅读安装路径和任务选项。
+2. 运行 `DesktopDock-<版本>-win-x64-setup.exe`，阅读安装路径和任务选项。
 3. 启动后通过托盘打开设置。程序使用 `%LOCALAPPDATA%\DesktopDock\config` 保存默认档案。便携版也使用此档案，除非显式传入绝对路径的 `--config-dir`。
 
 卸载从 Windows「设置 → 应用 → 已安装的应用」打开。保留配置是默认行为。交互卸载可明确选择清理应用识别的配置。清理路径以程序维护的文件清单为准，项目目标和外部自定义图标都留在原处。明确清理时会先检查桌面图标恢复记录。如果逐文件清理遇到权限或磁盘错误，可从之前的备份恢复已清理的配置。便携版可通过 `DesktopDock.exe --uninstall-cleanup` 清理其注册的登录启动项。

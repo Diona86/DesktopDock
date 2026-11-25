@@ -30,11 +30,16 @@ public partial class SettingsWindow : Window
         this.saveBehavior = saveBehavior ?? SaveBehaviorToSession;
         this.openThemeEditor = openThemeEditor;
         InitializeComponent();
+        InstalledVersionText.Text = $"当前版本 {DockDiagnostics.Version}";
         ThemeEditorButton.Visibility = openThemeEditor == null ? Visibility.Collapsed : Visibility.Visible;
         UpdateDockVisibility(dockVisible);
         RefreshItems();
         session.Changed += SessionChanged;
-        Closed += (_, _) => session.Changed -= SessionChanged;
+        Closed += (_, _) =>
+        {
+            session.Changed -= SessionChanged;
+            updateCheck?.Cancel();
+        };
         Navigation.SelectedIndex = 1;
     }
 

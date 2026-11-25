@@ -27,6 +27,7 @@ MCP 用于驱动独立测试配置和读取应用自己的 WPF 窗口。客户�
 | 添加、编辑、替换图标、移除引用 | `dock_add`、`dock_edit`、`dock_remove` |
 | 打开目标与所在目录 | `dock_open`、`dock_show_in_folder` |
 | 设置、显隐和设置窗口生命周期 | `dock_options`、`dock_visibility`、`dock_settings` |
+| 检查通用设置中的更新状态 | `dock_update_view`，`check: true` 发起同一个 GitHub 查询 |
 | 验证排序、移动手柄和 Tooltip | `dock_drag_item`、`dock_drag_handle`、`dock_tooltip` |
 | 获取 Dock 或设置窗口的实际渲染 | `dock_capture` |
 
