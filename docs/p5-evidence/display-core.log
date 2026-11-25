@@ -1,0 +1,21 @@
+START 2026-11-24T09:28:11.6916338+00:00 path=D:\myapp\desk-design\artifacts\p5-display-core\probe-bbce992ebf2f49b9baa799f9fd0bd625
+PASS native enumeration uses distinct monitor identities
+NATIVE DockMonitor { Id = C9E56E49A34B35CA63C7FB0A, Name = Generic PnP Monitor (\\.\DISPLAY1), Left = 0, Top = 0, Right = 2560, Bottom = 1440, WorkLeft = 0, WorkTop = 0, WorkRight = 2560, WorkBottom = 1440, Scale = 1, Primary = True }
+PASS initial absence does not reserve a monitor
+PASS legacy profile is bound to the first primary without relocation
+PASS second display has an independent configuration directory and theme scope
+PASS new primary, rearrangement, resolution and scale do not change profile identity
+PASS disconnecting the original primary does not promote another monitor to its profile
+PASS reconnect after restart restores the sticky legacy profile from disk
+PASS an attached previous floating monitor is the preferred legacy profile owner
+PASS invalid index preserves the original bytes and uses a temporary mapping
+PASS two real HWNDs have independent work-area placement a=-4375,2276,250,64 b=-3485,1982,136,86
+PASS DIP inset projects independently into physical positions
+PASS placement, layout and lock are independent
+PASS detaching one Dock hides its HWND and preserves its file
+PASS reconnected monitor follows new negative origin and programmed DPI scale b=-6980,-1518,136,86
+PASS monitor binding restricts hot zones and scales thickness
+PASS another display's edge does not reveal this Dock
+PASS assigned edge reveals the corresponding native window
+PASS pause remains per Dock
+END passed=18 failed=0

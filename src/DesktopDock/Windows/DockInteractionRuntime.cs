@@ -14,12 +14,17 @@ internal sealed class DockInteractionRuntime : IDisposable
     private readonly Action<bool> render;
     private readonly DispatcherTimer timer;
     private readonly DockVisibilityController visibility;
-    private readonly DockOutsideClickMonitor outsideClicks;
+    private readonly DockDisplayInput input;
+    private readonly bool ownsInput;
+    private readonly bool ownsGlobalInput;
+    private readonly Action<int, int> outsideClickHandler;
     private DockHotkeyService? hotkeys;
     private string? hotkeyStartupFailure;
     private DockOptions options;
     private IReadOnlyList<DockMonitor> physicalMonitors;
     private IReadOnlyList<DockMonitor>? validationMonitors;
+    private DockMonitor? assignedMonitor;
+    private bool monitorBound;
     private ResolvedDockHotZone[] zones = [];
     private DockWindowObservation? foreground;
     private string? foregroundMonitor;
@@ -39,35 +44,47 @@ internal sealed class DockInteractionRuntime : IDisposable
     private (string MonitorId, DockWindowPosition.RevealAnchor Anchor)? hotZoneReveal;
 
     internal DockInteractionRuntime(DockWindow dock, DockSession session, bool validationMode, Action<bool> render,
-        Func<DockHotkeyAction, bool> captureShortcut)
+        Func<DockHotkeyAction, bool> captureShortcut, DockMonitor? assignedMonitor = null,
+        bool ownsGlobalInput = true, Action<DockHotkeyAction>? routeGlobalShortcut = null,
+        DockDisplayInput? sharedInput = null, bool monitorBound = false)
     {
         this.dock = dock;
         this.session = session;
         this.validationMode = validationMode;
         this.render = render;
+        this.assignedMonitor = assignedMonitor;
+        this.monitorBound = monitorBound || assignedMonitor != null;
+        this.ownsGlobalInput = ownsGlobalInput;
+        input = sharedInput ?? new DockDisplayInput();
+        ownsInput = sharedInput == null;
+        outsideClickHandler = (x, y) => OutsideClick(x, y);
         options = session.Options;
-        physicalMonitors = DockWindows.GetMonitors();
+        physicalMonitors = this.monitorBound ? MonitorList(assignedMonitor) : DockWindows.GetMonitors();
         visibility = new DockVisibilityController(options.Behavior.Mode, options.ShowDockOnStartup);
         timer = new DispatcherTimer(DispatcherPriority.Background, dock.Dispatcher)
         {
             Interval = TimeSpan.FromMilliseconds(PointerIntervalMs)
         };
         timer.Tick += SampleNative;
-        outsideClicks = new DockOutsideClickMonitor((x, y) => OutsideClick(x, y));
         dock.EscapeRequested = HandleEscape;
         dock.ModalInteractionRequested = SetModalInteraction;
         dock.GroupPanelsChanged += UpdateObservation;
         session.Changed += OptionsChanged;
         RebuildZones();
 
-        if (!validationMode)
+        if (!validationMode && ownsGlobalInput)
         {
             try
             {
                 hotkeys = new DockHotkeyService(action =>
                 {
                     if (!captureShortcut(action))
-                        Shortcut(action);
+                    {
+                        if (routeGlobalShortcut != null)
+                            routeGlobalShortcut(action);
+                        else
+                            Shortcut(action);
+                    }
                 });
                 hotkeys.ApplyAtStartup(options.Behavior.Hotkeys);
             }
@@ -80,6 +97,7 @@ internal sealed class DockInteractionRuntime : IDisposable
     }
 
     internal IReadOnlyList<DockMonitor> Monitors => validationMonitors ?? physicalMonitors;
+    internal DockMonitor? AssignedMonitor => assignedMonitor;
     internal IReadOnlyList<ResolvedDockHotZone> Zones => zones;
     internal string? HotkeyStatus => hotkeyStartupFailure ?? (hotkeys?.Errors.Count > 0 ? string.Join("\n", hotkeys.Errors) : null);
     internal bool HotZonesPaused => visibility.HotZonesPaused;
@@ -91,6 +109,24 @@ internal sealed class DockInteractionRuntime : IDisposable
         return Monitors;
     }
 
+    internal void UpdateAssignedMonitor(DockMonitor? monitor)
+    {
+        if (monitorBound && assignedMonitor == monitor)
+            return;
+
+        monitorBound = true;
+        assignedMonitor = monitor;
+        physicalMonitors = MonitorList(monitor);
+        validationMonitors = null;
+        visibility.ResetDwell();
+        hotZoneReveal = null;
+        foreground = null;
+        RebuildZones();
+        Publish();
+    }
+
+    private static DockMonitor[] MonitorList(DockMonitor? monitor) => monitor is null ? [] : [monitor];
+    private bool HasConnectedTarget => !monitorBound || assignedMonitor != null;
     private bool NativeSampling => !validationMode || nativeSamplingForTest;
     private long Now => validationTime ?? Environment.TickCount64;
     private bool Dismissible => visibility.IsVisible && (visibility.Mode == DockMode.AutoHide || visibility.State == DockVisibilityState.Temporary);
@@ -103,7 +139,7 @@ internal sealed class DockInteractionRuntime : IDisposable
             void Persist() => session.UpdateOptions(session.Options with { Behavior = behavior });
 
             bool needsRegistration = behavior.Hotkeys != options.Behavior.Hotkeys || (retryShortcuts && HotkeyStatus != null);
-            if (!validationMode && needsRegistration)
+            if (!validationMode && ownsGlobalInput && needsRegistration)
             {
                 if (hotkeys == null)
                     return hotkeyStartupFailure ?? "全局快捷键服务不可用。";
@@ -202,6 +238,7 @@ internal sealed class DockInteractionRuntime : IDisposable
         mode = visibility.Mode,
         state = visibility.State,
         paused = visibility.HotZonesPaused,
+        assignedMonitorId = assignedMonitor?.Id,
         monitorId = visibility.MonitorId,
         pendingZoneId = visibility.PendingZoneId,
         activeZoneId = visibility.ActiveZoneId,
@@ -237,6 +274,8 @@ internal sealed class DockInteractionRuntime : IDisposable
 
     private string? PointerMonitorId()
     {
+        if (monitorBound)
+            return assignedMonitor?.Id;
         if (validationMode && !nativeSamplingForTest)
             return validationPointerMonitor;
         return DockWindows.TryGetPointer(out int x, out int y) ? MonitorAt(x, y)?.Id : null;
@@ -262,7 +301,7 @@ internal sealed class DockInteractionRuntime : IDisposable
     private void SampleNative(object? sender, EventArgs args)
     {
         long now = Environment.TickCount64;
-        if (now >= nextDisplays)
+        if (!monitorBound && now >= nextDisplays)
         {
             nextDisplays = now + DisplayIntervalMs;
             RefreshMonitors();
@@ -289,7 +328,7 @@ internal sealed class DockInteractionRuntime : IDisposable
         if (Dismissible || dock.HasGroupPanels)
         {
             bool escape = DockWindows.IsVirtualKeyDown(0x1B);
-            if (escape && !escapeDown)
+            if (escape && !escapeDown && (!monitorBound || MonitorAt(x, y) != null))
                 HandleEscape();
             escapeDown = escape;
             if (outsideHookError != 0)
@@ -304,6 +343,8 @@ internal sealed class DockInteractionRuntime : IDisposable
 
     private void RefreshMonitors()
     {
+        if (monitorBound)
+            return;
         IReadOnlyList<DockMonitor> updated = DockWindows.GetMonitors();
         if (physicalMonitors.SequenceEqual(updated))
             return;
@@ -355,6 +396,12 @@ internal sealed class DockInteractionRuntime : IDisposable
 
     private void Publish()
     {
+        if (!HasConnectedTarget)
+        {
+            render(false);
+            UpdateObservation();
+            return;
+        }
         if (!visibility.IsVisible)
             hotZoneReveal = null;
         bool temporary = visibility.State is DockVisibilityState.Temporary or DockVisibilityState.Revealed or DockVisibilityState.Locked;
@@ -367,30 +414,32 @@ internal sealed class DockInteractionRuntime : IDisposable
             : temporary ? physicalMonitors.FirstOrDefault(m => m.Id == visibility.MonitorId) : null;
         dock.SetRevealPlacement(zoneMonitor ?? preferred ?? primary, zoneMonitor == null ? null : hotZoneReveal?.Anchor);
         dock.Topmost = temporary && CanFloatAbove(foreground);
+        if (monitorBound && visibility.IsVisible && !dock.IsPresentationRequested)
+            dock.PrepareReveal();
         render(visibility.IsVisible);
         UpdateObservation();
     }
 
     private void UpdateObservation()
     {
-        bool wantOutside = NativeSampling && (Dismissible || dock.HasGroupPanels);
+        bool wantOutside = HasConnectedTarget && NativeSampling && (Dismissible || dock.HasGroupPanels);
         if (outsideRequested != wantOutside)
         {
             outsideRequested = wantOutside;
             if (wantOutside)
             {
-                outsideClicks.TryStart(out outsideHookError);
+                outsideHookError = input.AddOutsideClick(outsideClickHandler);
                 mouseDown = IsMouseButtonDown();
             }
             else
             {
-                outsideClicks.Stop();
+                input.RemoveOutsideClick(outsideClickHandler);
                 outsideHookError = 0;
                 escapeDown = false;
             }
         }
 
-        bool wantTimer = NativeSampling && (dock.HasGroupPanels || visibility.State == DockVisibilityState.Temporary ||
+        bool wantTimer = HasConnectedTarget && NativeSampling && (dock.HasGroupPanels || visibility.State == DockVisibilityState.Temporary ||
             visibility.Mode == DockMode.AutoHide && (!visibility.HotZonesPaused || visibility.IsVisible));
         if (wantTimer && !timer.IsEnabled)
             timer.Start();
@@ -409,7 +458,9 @@ internal sealed class DockInteractionRuntime : IDisposable
         session.Changed -= OptionsChanged;
         dock.GroupPanelsChanged -= UpdateObservation;
         timer.Stop();
-        outsideClicks.Dispose();
+        input.RemoveOutsideClick(outsideClickHandler);
+        if (ownsInput)
+            input.Dispose();
         hotkeys?.Dispose();
     }
 }

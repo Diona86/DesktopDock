@@ -102,7 +102,9 @@ public partial class DockWindow : Window
         Refresh();
     }
 
-    private bool PositionLocked => session.Options.DockPositionLocked || session.Options.GlobalPositionLocked;
+    internal Func<bool>? GlobalPositionLock { get; set; }
+
+    private bool PositionLocked => session.Options.DockPositionLocked || (GlobalPositionLock?.Invoke() ?? session.Options.GlobalPositionLocked);
 
     private void SessionChanged(object? sender, EventArgs e)
     {
@@ -113,14 +115,21 @@ public partial class DockWindow : Window
     protected override void OnDpiChanged(DpiScale oldDpi, DpiScale newDpi)
     {
         base.OnDpiChanged(oldDpi, newDpi);
-        if (newDpi.DpiScaleX != layoutScale && dpiRefresh?.Status != DispatcherOperationStatus.Pending)
+        if (dpiRefresh?.Status != DispatcherOperationStatus.Pending)
         {
             // The window can receive element-level routed DPI notifications while measuring new icons.
             // Use the window's own DPI callback and defer changes to the visual tree until layout returns.
             dpiRefresh = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
             {
                 if (GetDockWorkArea().Scale != layoutScale)
+                {
                     Refresh();
+                    RefreshGroupPanels();
+                }
+                else
+                {
+                    QueuePlacement();
+                }
             }));
         }
     }

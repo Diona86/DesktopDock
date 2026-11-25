@@ -43,10 +43,11 @@ public partial class App
         new("dock_tooltip", "Open or close the real WPF tooltip for a test Dock item.",
             """{"type":"object","properties":{"id":{"type":"string","format":"uuid"},"open":{"type":"boolean"}},"required":["id","open"],"additionalProperties":false}"""),
         new("dock_capture", "Render the selected app window's own visual tree as a PNG.",
-            """{"type":"object","properties":{"window":{"enum":["dock","settings","group","themeEditor"]}},"required":["window"],"additionalProperties":false}"""),
+            """{"type":"object","properties":{"window":{"enum":["dock","settings","group","themeEditor","hotZoneMap","desktopManager"]}},"required":["window"],"additionalProperties":false}"""),
         .. P2Tools(),
         .. P3Tools(),
-        .. P4Tools()
+        .. P4Tools(),
+        .. P5Tools()
     ];
 
     private async Task RunMcp()
@@ -161,9 +162,13 @@ public partial class App
                     "settings" => settings,
                     "group" => testDock.CurrentGroupPanel,
                     "themeEditor" => themeEditor,
+                    "hotZoneMap" => zoneMap,
+                    "desktopManager" => desktopManager,
                     _ => throw new ArgumentException("Unknown window.")
                 });
             default:
+                if (name.StartsWith("dock_p5_", StringComparison.Ordinal))
+                    return InvokeP5Mcp(name, args);
                 if (name.StartsWith("dock_p4_", StringComparison.Ordinal))
                     return InvokeP4Mcp(name, args);
                 return name.StartsWith("dock_p3_", StringComparison.Ordinal) ? InvokeP3Mcp(name, args) : InvokeP2Mcp(name, args);

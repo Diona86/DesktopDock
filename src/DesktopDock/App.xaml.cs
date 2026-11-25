@@ -9,7 +9,6 @@ public partial class App : Application
     private DockWindow? dock;
     private SettingsWindow? settings;
     private Forms.NotifyIcon? tray;
-    private Forms.ToolStripMenuItem? visibilityMenu;
     private Forms.ToolStripMenuItem? pauseZonesMenu;
     private DockInteractionRuntime? interaction;
     private bool dockVisibilityRequested;
@@ -22,30 +21,30 @@ public partial class App : Application
         validationMode = e.Args.Contains("--mcp-stdio", StringComparer.Ordinal);
         try
         {
+            if (e.Args is ["--uninstall-cleanup"])
+            {
+                CreateStartupRegistration().RemoveForUninstall();
+                ExitApp(0);
+                return;
+            }
             (string directory, bool showSettings) = ReadOptions(e.Args);
             if (validationMode && (!Console.IsInputRedirected || !Console.IsOutputRedirected))
                 throw new ArgumentException("MCP 模式需要重定向 stdin 和 stdout。");
             session = DockSession.Open(directory);
-            dock = new DockWindow(session, new DockIconService(), ShowSettings, EditItem, ReplaceIcon, () => SetDockVisible(false));
-            MainWindow = dock;
             InitializeThemes(directory);
-            dock.Closing += (_, args) =>
-            {
-                if (exiting)
-                    return;
-                args.Cancel = true;
-                Dispatcher.BeginInvoke(() => SetDockVisible(false));
-            };
+            InitializeDisplays(directory, session);
+            InitializeDesktopIntegration(directory);
             if (!validationMode)
                 CreateTray();
-            interaction = new DockInteractionRuntime(dock, session, validationMode, RenderDockVisibility, CaptureShortcut);
             UpdateTrayBehavior();
             if (showSettings)
                 ShowSettings();
             if (validationMode)
                 _ = RunMcp();
+            else
+                ShowDesktopRecoveryIfNeeded();
         }
-        catch (Exception exception) when (DockDialogs.IsUserFacing(exception))
+        catch (Exception exception) when (DockDialogs.IsUserFacing(exception) || exception is System.Security.SecurityException)
         {
             if (validationMode)
                 WriteMcpError(exception);
@@ -58,14 +57,14 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         DetachThemes();
-        interaction?.Dispose();
+        DisposeDesktopIntegration();
+        DisposeDisplays();
         if (tray != null)
         {
             tray.Visible = false;
             tray.ContextMenuStrip?.Dispose();
             tray.Dispose();
         }
-        session?.Dispose();
         base.OnExit(e);
     }
 
@@ -85,9 +84,10 @@ public partial class App : Application
                     settings = true;
                     break;
                 case "--mcp-stdio":
+                case "--startup":
                     break;
                 default:
-                    throw new ArgumentException("启动选项无效。可使用 --config-dir <绝对路径>、--settings 和 --mcp-stdio。");
+                    throw new ArgumentException("启动选项无效。可使用 --config-dir <绝对路径>、--settings、--mcp-stdio 或 --uninstall-cleanup。");
             }
         }
         if (validationMode && string.Equals(Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory)), defaultDirectory, StringComparison.OrdinalIgnoreCase))
@@ -98,20 +98,19 @@ public partial class App : Application
     private void CreateTray()
     {
         var menu = new Forms.ContextMenuStrip();
-        menu.Items.Add("设置", null, (_, _) => ShowSettings());
-        menu.Items.Add("主题编辑器…", null, (_, _) => ShowThemeEditor());
-        visibilityMenu = new Forms.ToolStripMenuItem();
-        visibilityMenu.Click += (_, _) => SetDockVisible(!dockVisibilityRequested);
-        menu.Items.Add(visibilityMenu);
+        menu.Items.Add("显示全部 Dock", null, (_, _) => ApplyTrayCommand("show"));
+        menu.Items.Add("隐藏全部 Dock", null, (_, _) => ApplyTrayCommand("hide"));
         pauseZonesMenu = new Forms.ToolStripMenuItem("暂停热区");
-        pauseZonesMenu.Click += (_, _) =>
-        {
-            interaction?.Shortcut(DockHotkeyAction.Pause);
-            UpdateTrayBehavior();
-        };
+        pauseZonesMenu.Click += (_, _) => ApplyTrayCommand(ConnectedDocks.All(item => item.Runtime.HotZonesPaused) ? "resume" : "pause");
         menu.Items.Add(pauseZonesMenu);
         menu.Items.Add(new Forms.ToolStripSeparator());
-        menu.Items.Add("退出", null, (_, _) => ExitApp(0));
+        menu.Items.Add("设置", null, (_, _) => ApplyTrayCommand("settings"));
+        menu.Items.Add("可视化热区…", null, (_, _) => ShowZoneMap());
+        menu.Items.Add("主题编辑器…", null, (_, _) => ShowThemeEditor());
+        menu.Items.Add("桌面图标…", null, (_, _) => ShowDesktopManager());
+        menu.Items.Add("恢复桌面图标", null, (_, _) => ApplyTrayCommand("restore"));
+        menu.Items.Add(new Forms.ToolStripSeparator());
+        menu.Items.Add("退出", null, (_, _) => ApplyTrayCommand("exit"));
         tray = new Forms.NotifyIcon
         {
             Text = "Desktop Dock",
@@ -127,18 +126,18 @@ public partial class App : Application
         interaction?.SetVisible(visible);
     }
 
-    private void RenderDockVisibility(bool visible)
+    private void RenderDockVisibility(DisplayDock instance, bool visible)
     {
-        if (dock == null)
-            return;
-        bool revealing = visible && !dockVisibilityRequested;
-        dockVisibilityRequested = visible;
-        if (revealing && session?.Options.Behavior.Mode == DockMode.AutoHide)
-            dock.PrepareReveal();
-        dock.SetThemedVisibility(visible);
-        if (visibilityMenu != null)
-            visibilityMenu.Text = visible ? "隐藏 Dock" : "显示 Dock";
-        settings?.UpdateDockVisibility(visible);
+        bool revealing = visible && !instance.RequestedVisible;
+        instance.RequestedVisible = visible;
+        if (revealing && instance.Profile.Options.Behavior.Mode == DockMode.AutoHide)
+            instance.Window.PrepareReveal();
+        instance.Window.SetThemedVisibility(visible);
+        if (instance == activeDock)
+        {
+            dockVisibilityRequested = visible;
+            settings?.UpdateDockVisibility(visible);
+        }
         UpdateTrayBehavior();
     }
 
@@ -146,7 +145,7 @@ public partial class App : Application
     {
         if (pauseZonesMenu == null)
             return;
-        bool paused = interaction?.HotZonesPaused == true;
+        bool paused = ConnectedDocks.All(instance => instance.Runtime.HotZonesPaused);
         pauseZonesMenu.Checked = paused;
         pauseZonesMenu.Text = paused ? "恢复热区" : "暂停热区";
     }
@@ -155,13 +154,19 @@ public partial class App : Application
     {
         if (settings == null)
         {
-            settings = new SettingsWindow(session!, dockVisibilityRequested, SetDockVisible, EditItem, ReplaceIcon,
+            DisplayDock instance = activeDock!;
+            settings = new SettingsWindow(instance.Profile, instance.RequestedVisible, instance.Runtime.SetVisible,
+                item => EditItemFor(instance, item), item => ReplaceIconFor(instance, item),
                 interaction!.ReadMonitors, SaveBehavior, ShowThemeEditor)
             {
                 ShowActivated = !validationMode
             };
             settings.Closed += (_, _) => settings = null;
-            settings.UpdateHotkeyRegistrationStatus(interaction.HotkeyStatus);
+            settings.UpdateHotkeyRegistrationStatus(legacyDock!.Runtime.HotkeyStatus);
+            settings.ConfigureSystemControls(ShowZoneMap, ShowDesktopManager, startupRegistration,
+                () => legacyDock.Profile.Options.GlobalPositionLocked, SetGlobalPositionLock,
+                () => legacyDock.Profile.Options.Behavior.Hotkeys);
+            UpdateDisplayChoices();
             settings.Show();
         }
         if (settings.WindowState == WindowState.Minimized)
@@ -176,18 +181,19 @@ public partial class App : Application
         Shutdown(code);
     }
 
-    private Window? DialogOwner => settings?.IsActive == true ? settings : dock?.IsVisible == true ? dock : settings;
-
     private string? SaveBehavior(DockBehaviorOptions options)
     {
-        string? error = interaction!.Apply(options, settings?.IsEditingShortcuts == true);
-        settings?.UpdateHotkeyRegistrationStatus(interaction.HotkeyStatus);
+        DockInteractionRuntime global = legacyDock!.Runtime;
+        string? error = settings?.IsEditingShortcuts == true
+            ? global.Apply(legacyDock.Profile.Options.Behavior with { Hotkeys = options.Hotkeys }, true)
+            : interaction!.Apply(options, false);
+        settings?.UpdateHotkeyRegistrationStatus(global.HotkeyStatus);
         return error;
     }
 
     private bool CaptureShortcut(DockHotkeyAction action)
     {
-        DockHotkeys bindings = session!.Options.Behavior.Hotkeys;
+        DockHotkeys bindings = legacyDock!.Profile.Options.Behavior.Hotkeys;
         HotkeyChord? chord = action switch
         {
             DockHotkeyAction.Toggle => bindings.Toggle,
@@ -198,17 +204,27 @@ public partial class App : Application
         return chord != null && settings?.CaptureRegisteredHotkey(chord) == true;
     }
 
-    private void EditItem(DockItem item)
+    private Window? ItemDialogOwner(DisplayDock instance) =>
+        instance == activeDock && settings?.IsActive == true ? settings
+            : instance.Window.IsVisible ? instance.Window : settings;
+
+    private void EditItemFor(DisplayDock instance, DockItem item)
     {
-        interaction?.SetModalInteraction(true);
-        try { DockDialogs.Edit(DialogOwner, session!, item); }
-        finally { interaction?.SetModalInteraction(false); }
+        instance.Runtime.SetModalInteraction(true);
+        try { DockDialogs.Edit(ItemDialogOwner(instance), instance.Profile, item); }
+        finally { instance.Runtime.SetModalInteraction(false); }
     }
 
-    private void ReplaceIcon(DockItem item)
+    private void ReplaceIconFor(DisplayDock instance, DockItem item)
     {
-        interaction?.SetModalInteraction(true);
-        try { DockDialogs.ReplaceIcon(DialogOwner, session!, item); }
-        finally { interaction?.SetModalInteraction(false); }
+        instance.Runtime.SetModalInteraction(true);
+        try { DockDialogs.ReplaceIcon(ItemDialogOwner(instance), instance.Profile, item); }
+        finally { instance.Runtime.SetModalInteraction(false); }
+    }
+
+    private void SetGlobalPositionLock(bool locked)
+    {
+        DockSession root = legacyDock!.Profile;
+        root.UpdateOptions(root.Options with { GlobalPositionLocked = locked });
     }
 }

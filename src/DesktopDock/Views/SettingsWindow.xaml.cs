@@ -45,6 +45,7 @@ public partial class SettingsWindow : Window
     }
 
     internal void SelectPage(int index) => Navigation.SelectedIndex = index;
+    internal int SelectedPage => Navigation.SelectedIndex;
 
     private void OpenThemeEditor(object sender, RoutedEventArgs e) => openThemeEditor?.Invoke();
 
@@ -67,7 +68,7 @@ public partial class SettingsWindow : Window
         ItemsPage.Visibility = page == 1 ? Visibility.Visible : Visibility.Collapsed;
         PositionPage.Visibility = page == 2 ? Visibility.Visible : Visibility.Collapsed;
         GeneralPage.Visibility = page == 3 ? Visibility.Visible : Visibility.Collapsed;
-        BehaviorPage.Visibility = page == 4 ? Visibility.Visible : Visibility.Collapsed;
+        HotZonesPage.Visibility = page == 4 ? Visibility.Visible : Visibility.Collapsed;
         HotkeysPage.Visibility = page == 5 ? Visibility.Visible : Visibility.Collapsed;
         LayoutPage.Visibility = page == 6 ? Visibility.Visible : Visibility.Collapsed;
         SaveButton.Visibility = page == 1 ? Visibility.Collapsed : Visibility.Visible;
@@ -92,13 +93,14 @@ public partial class SettingsWindow : Window
                 break;
             case 3:
                 StartupVisibilityInput.IsChecked = options.ShowDockOnStartup;
-                GlobalLockInput.IsChecked = options.GlobalPositionLocked;
+                GlobalLockInput.IsChecked = readGlobalLock?.Invoke() ?? options.GlobalPositionLocked;
+                RefreshStartupStatus();
                 break;
             case 4:
                 BehaviorPage.LoadOptions(options.Behavior, options.Placement, monitors());
                 break;
             case 5:
-                HotkeysPage.LoadOptions(options.Behavior.Hotkeys);
+                HotkeysPage.LoadOptions(readGlobalHotkeys?.Invoke() ?? options.Behavior.Hotkeys);
                 break;
             case 6:
                 LayoutPage.LoadOptions(session);
@@ -134,12 +136,14 @@ public partial class SettingsWindow : Window
                 3 => options with
                 {
                     ShowDockOnStartup = StartupVisibilityInput.IsChecked == true,
-                    GlobalPositionLocked = GlobalLockInput.IsChecked == true
+                    GlobalPositionLocked = saveGlobalLock == null ? GlobalLockInput.IsChecked == true : options.GlobalPositionLocked
                 },
                 6 => options with { Layout = LayoutPage.ReadOptions(options.Layout) },
                 _ => options
             };
             session.UpdateOptions(options);
+            if (Navigation.SelectedIndex == 3)
+                saveGlobalLock?.Invoke(GlobalLockInput.IsChecked == true);
             Status.Text = "设置已保存。";
         });
     }

@@ -36,3 +36,5 @@
 阶段只新增独立原型、计划、验收记录、实测日志和 TODO。项目初始化和 P1 留待确认。 [P0 计划](PHASE_0_PLAN.md) · [P0 验收](PHASE_0_ACCEPTANCE.md) · [项目 TODO](../TODO.md)
 
 原型复现命令见各自的运行说明。 [窗口](../prototypes/P0.Window/README.md) · [输入](../prototypes/P0.Input/README.md) · [桌面图标](../prototypes/P0.Shell/README.md)
+
+P5 补充了真实 WPF 多窗口的受控拓扑，以及真实 Explorer 只读检查、独立窗口显隐和恢复记录验证。实体多屏与真实 Explorer 写入继续作为待测项。 [P5 验收](PHASE_5_ACCEPTANCE.md)

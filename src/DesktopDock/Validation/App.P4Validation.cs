@@ -41,7 +41,7 @@ public partial class App
                 saved.PerformanceMode,
                 themes = saved.Themes,
                 saved.Overrides,
-                tokens = saved.Resolve(DockThemeState.PrimaryDockId),
+                tokens = saved.Resolve(activeDock?.ThemeId ?? DockThemeState.PrimaryDockId),
                 loadError = themeStore.LoadError
             },
             dockRequestedVisible = dockVisibilityRequested,

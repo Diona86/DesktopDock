@@ -54,33 +54,76 @@ internal static class DockWindows
     private const int ToolWindow = 0x00000080;
     private const int ExtendedFrameBounds = 9;
     private const int Cloaked = 14;
+    private static readonly Dictionary<string, (string Connector, bool Collided)> KnownDisplayIdentities = [];
 
     internal static IReadOnlyList<DockMonitor> GetMonitors()
     {
-        var monitors = new List<DockMonitor>();
+        var monitors = new List<(DockMonitor Monitor, string Connector)>();
         EnumDisplayMonitors(0, 0, (monitor, _, _, _) =>
         {
             var info = new MonitorInfo { Size = (uint)Marshal.SizeOf<MonitorInfo>() };
             if (!GetMonitorInfo(monitor, ref info) || !info.Bounds.Usable)
                 return true;
 
-            var display = new DisplayDevice { Size = (uint)Marshal.SizeOf<DisplayDevice>() };
-            const uint getDeviceInterfaceName = 1;
-            bool hasInterface = EnumDisplayDevices(info.DeviceName, 0, ref display, getDeviceInterfaceName)
-                && !string.IsNullOrWhiteSpace(display.DeviceId);
+            DisplayDevice display = ReadMonitorDevice(info.DeviceName);
+            bool hasInterface = !string.IsNullOrWhiteSpace(display.DeviceId);
             string id = hasInterface
-                ? Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(display.DeviceId.ToUpperInvariant())))[..24]
+                ? MonitorFingerprint(display.DeviceId.Length == 127 ? $"{display.DeviceId}|{display.DeviceKey}" : display.DeviceId)
                 : info.DeviceName.ToUpperInvariant();
             string name = hasInterface && !string.IsNullOrWhiteSpace(display.Description)
                 ? $"{display.Description} ({info.DeviceName})" : info.DeviceName;
             NativeRect bounds = info.Bounds;
             NativeRect work = info.Work.Usable ? info.Work : bounds;
-            monitors.Add(new DockMonitor(id, name, bounds.Left, bounds.Top, bounds.Right, bounds.Bottom,
-                work.Left, work.Top, work.Right, work.Bottom, ReadMonitorScale(monitor, bounds), (info.Flags & 1) != 0));
+            monitors.Add((new DockMonitor(id, name, bounds.Left, bounds.Top, bounds.Right, bounds.Bottom,
+                work.Left, work.Top, work.Right, work.Bottom, ReadMonitorScale(monitor, bounds), (info.Flags & 1) != 0),
+                string.IsNullOrWhiteSpace(display.DeviceKey) ? info.DeviceName : $"{display.DeviceKey}|{info.DeviceName}"));
             return true;
         }, 0);
 
-        return monitors.OrderByDescending(monitor => monitor.Primary).ThenBy(monitor => monitor.Id, StringComparer.Ordinal).ToArray();
+        // A mirrored logical surface needs one Dock. Distinct surfaces with colliding device strings use connector aliases.
+        var result = new List<DockMonitor>();
+        lock (KnownDisplayIdentities)
+        {
+            foreach (var sameId in monitors.GroupBy(entry => entry.Monitor.Id, StringComparer.OrdinalIgnoreCase))
+            {
+                var surfaces = sameId.OrderByDescending(entry => entry.Monitor.Primary)
+                    .DistinctBy(entry => (entry.Monitor.Left, entry.Monitor.Top, entry.Monitor.Right, entry.Monitor.Bottom))
+                    .ToArray();
+                string firstConnector = surfaces[0].Connector.ToUpperInvariant();
+                (string Connector, bool Collided) identity = KnownDisplayIdentities.GetValueOrDefault(sameId.Key, (firstConnector, false));
+                bool collided = identity.Collided || surfaces.Length > 1;
+                KnownDisplayIdentities[sameId.Key] = (identity.Connector, collided);
+                foreach (var (monitor, connector) in surfaces)
+                {
+                    string normalized = connector.ToUpperInvariant();
+                    string id = collided && identity.Connector != normalized ? MonitorFingerprint($"{monitor.Id}|{normalized}") : monitor.Id;
+                    result.Add(monitor with { Id = id });
+                }
+            }
+        }
+        return result.OrderByDescending(monitor => monitor.Primary).ThenBy(monitor => monitor.Id, StringComparer.Ordinal).ToArray();
+    }
+
+    private static string MonitorFingerprint(string value) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value.ToUpperInvariant())))[..24];
+
+    private static DisplayDevice ReadMonitorDevice(string adapter)
+    {
+        const uint getDeviceInterfaceName = 1;
+        const uint activeMonitor = 1;
+        DisplayDevice valid = default;
+        for (uint index = 0; ; index++)
+        {
+            var display = new DisplayDevice { Size = (uint)Marshal.SizeOf<DisplayDevice>() };
+            if (!EnumDisplayDevices(adapter, index, ref display, getDeviceInterfaceName))
+                return valid;
+            if (string.IsNullOrWhiteSpace(display.DeviceId))
+                continue;
+            if ((display.Flags & activeMonitor) != 0)
+                return display;
+            if (valid.DeviceId == null)
+                valid = display;
+        }
     }
 
     internal static bool TryGetPointer(out int x, out int y)

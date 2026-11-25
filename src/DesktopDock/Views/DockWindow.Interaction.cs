@@ -25,7 +25,10 @@ public partial class DockWindow
         revealMonitor = monitor;
         revealAnchor = anchor;
         if (monitorChanged)
+        {
             Refresh();
+            RefreshGroupPanels();
+        }
         else if (anchorChanged)
             QueuePlacement();
     }

@@ -29,3 +29,5 @@
 - 普通交互会话运行 `dotnet run --project tests/P2/Native/NativeProbe.csproj -c Release` 可复现独立 Win32 窗口、视频、鼠标钩子和快捷键冲突测试。加 `-- --skip-hotkeys` 跳过短暂的全局注册。
 
 阶段 2 已交付。P3 等待确认。 [计划](PHASE_2_PLAN.md) · [项目 TODO](../TODO.md)
+
+P5 发布包再次通过 P2 回归，并使用受控拓扑验证多个实际 Dock 的独立热区与显示状态。混合 DPI 的物理屏仍待现场复测。 [P5 验收](PHASE_5_ACCEPTANCE.md)

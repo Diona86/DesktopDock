@@ -1,0 +1,96 @@
+<Window x:Class="DesktopDock.DockHotZoneMapWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="可视化热区编辑器" AutomationProperties.AutomationId="DockHotZoneMap"
+        Width="1040" Height="620" MinWidth="700" MinHeight="480"
+        WindowStartupLocation="CenterOwner" FontFamily="Segoe UI, Microsoft YaHei UI"
+        ShowInTaskbar="False" UseLayoutRounding="True">
+    <Window.Resources><ResourceDictionary Source="SettingsStyles.xaml" /></Window.Resources>
+    <Grid Background="{StaticResource Canvas}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Border Padding="23,16,23,14" BorderBrush="{StaticResource Rule}" BorderThickness="0,0,0,1">
+            <TextBlock Text="可视化热区编辑器" FontSize="24" Foreground="{StaticResource Ink}" FontWeight="SemiBold" />
+        </Border>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="290" />
+            </Grid.ColumnDefinitions>
+            <Grid Margin="22,17,19,14">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <DockPanel LastChildFill="True" Margin="0,0,0,8">
+                    <TextBlock x:Name="TopologySummary" DockPanel.Dock="Right" Style="{StaticResource FieldHint}" />
+                    <TextBlock Text="屏幕排列" Style="{StaticResource FieldLabel}" Margin="0" />
+                </DockPanel>
+                <Border Grid.Row="1" Background="{StaticResource Sidebar}" BorderBrush="{StaticResource Rule}"
+                        BorderThickness="1" CornerRadius="6" ClipToBounds="True">
+                    <Canvas x:Name="Map" Background="Transparent" ClipToBounds="True" Focusable="True"
+                            AutomationProperties.Name="显示器、Dock 和热区示意图" SizeChanged="MapSizeChanged"
+                            MouseLeftButtonDown="MapPointerDown" MouseMove="MapPointerMove"
+                            MouseLeftButtonUp="MapPointerUp" LostMouseCapture="MapCaptureLost"
+                            PreviewKeyDown="MapKeyDown" />
+                </Border>
+                <StackPanel Grid.Row="2" Margin="0,8,0,0">
+                    <WrapPanel>
+                        <Border Width="12" Height="5" Background="{StaticResource Ink}" VerticalAlignment="Center" Margin="0,0,5,0" />
+                        <TextBlock Text="Dock" Foreground="{StaticResource Muted}" Margin="0,0,13,0" />
+                        <Border Width="12" Height="5" Background="{StaticResource Accent}" VerticalAlignment="Center" Margin="0,0,5,0" />
+                        <TextBlock Text="热区" Foreground="{StaticResource Muted}" Margin="0,0,13,0" />
+                        <Border Width="12" Height="5" Background="#FF996019" VerticalAlignment="Center" Margin="0,0,5,0" />
+                        <TextBlock Text="冲突" Foreground="{StaticResource Muted}" />
+                    </WrapPanel>
+                    <TextBlock Style="{StaticResource FieldHint}" Margin="0,5,0,0"
+                               Text="选中热区后拖动圆形手柄调整起止位置。拖动靠外的方形手柄调整偏移，拖动靠内的方形手柄调整厚度。" />
+                </StackPanel>
+            </Grid>
+            <Border Grid.Column="1" BorderBrush="{StaticResource Rule}" BorderThickness="1,0,0,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="15,17,16,16">
+                        <TextBlock Text="当前显示器" Style="{StaticResource FieldLabel}" />
+                        <ComboBox x:Name="DisplayInput" Height="34" VerticalContentAlignment="Center"
+                                  AutomationProperties.Name="当前显示器" SelectionChanged="DisplayChanged" />
+                        <TextBlock x:Name="DisplayDetails" Style="{StaticResource FieldHint}" Margin="0,5,0,14" />
+                        <TextBlock Text="热区" Style="{StaticResource FieldLabel}" />
+                        <ListBox x:Name="ZoneInput" MinHeight="68" MaxHeight="160" Padding="4"
+                                 BorderBrush="{StaticResource Rule}" Background="White"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" AutomationProperties.Name="当前屏幕热区"
+                                 SelectionChanged="ZoneChanged" MouseDoubleClick="EditZone">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Label}" ToolTip="{Binding Details}" TextTrimming="CharacterEllipsis" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <TextBlock x:Name="ZoneDetails" Style="{StaticResource FieldHint}" Margin="0,5,0,10" />
+                        <WrapPanel>
+                            <Button x:Name="AddButton" Content="添加" Click="AddZone" Margin="0,0,6,5" />
+                            <Button x:Name="EditButton" Content="编辑…" Click="EditZone" Margin="0,0,6,5" />
+                            <Button x:Name="RemoveButton" Content="删除" Click="RemoveZone" Margin="0,0,0,5" />
+                        </WrapPanel>
+                        <Button x:Name="ResetButton" Content="使用默认热区" HorizontalAlignment="Left" Click="ResetZones" Margin="0,3,0,0" />
+                        <TextBlock x:Name="ConflictStatus" TextWrapping="Wrap" Margin="0,10,0,0"
+                                   AutomationProperties.LiveSetting="Polite" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+        <Border Grid.Row="2" Padding="22,10" BorderBrush="{StaticResource Rule}" BorderThickness="0,1,0,0">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button x:Name="CloseButton" Content="关闭" Click="CloseEditor" Margin="0,0,8,0" />
+                    <Button x:Name="ApplyButton" Content="应用到当前屏" Style="{StaticResource PrimaryButton}" Click="SaveZones" />
+                </StackPanel>
+                <TextBlock x:Name="Status" Foreground="{StaticResource Muted}" VerticalAlignment="Center"
+                           TextWrapping="Wrap" Margin="0,0,12,0" AutomationProperties.LiveSetting="Polite" />
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>

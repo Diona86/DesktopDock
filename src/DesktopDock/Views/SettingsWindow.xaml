@@ -15,6 +15,12 @@
         <Border Background="{StaticResource Sidebar}" BorderBrush="{StaticResource Rule}" BorderThickness="0,0,1,0">
             <DockPanel Margin="17,28,17,20" LastChildFill="True">
                 <TextBlock DockPanel.Dock="Top" Margin="9,0,0,25" Text="Desktop Dock" FontSize="19" FontWeight="SemiBold" />
+                <StackPanel DockPanel.Dock="Top" x:Name="DisplaySelector" Visibility="Collapsed" Margin="0,0,0,15">
+                    <TextBlock Margin="9,0,0,5" Style="{StaticResource FieldHint}" Text="正在配置的显示器" />
+                    <ComboBox x:Name="DisplayInput" DisplayMemberPath="Label" SelectionChanged="SwitchDisplay"
+                              AutomationProperties.Name="设置显示器" AutomationProperties.AutomationId="SettingsDockDisplay" />
+                    <TextBlock x:Name="DisplayNotice" Margin="3,5,0,0" Style="{StaticResource FieldHint}" TextWrapping="Wrap" />
+                </StackPanel>
                 <ListBox x:Name="Navigation" AutomationProperties.Name="设置分类" SelectionChanged="Navigate"
                          BorderThickness="0" Background="Transparent" ItemContainerStyle="{StaticResource NavItem}">
                     <ListBoxItem Content="Dock 外观" />
@@ -123,9 +129,21 @@
                     <CheckBox x:Name="StartupVisibilityInput" Content="常驻模式启动时显示 Dock" Margin="0,9,0,13" />
                     <CheckBox x:Name="GlobalLockInput" Content="全局锁定 Dock 位置" Margin="0,0,0,13" />
                     <TextBlock Style="{StaticResource FieldHint}" Text="关闭设置窗口后，Dock 会继续运行。可通过通知区域显示 Dock 或退出。" />
+                    <StackPanel x:Name="DesktopSystemControls" Visibility="Collapsed" Margin="0,22,0,0">
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="Windows 集成" />
+                        <CheckBox x:Name="WindowsStartupInput" Content="登录 Windows 时启动 Desktop Dock"
+                                  Click="ToggleWindowsStartup" Margin="0,8,0,4" />
+                        <TextBlock x:Name="WindowsStartupStatus" Style="{StaticResource FieldHint}" TextWrapping="Wrap" Margin="0,0,0,11"
+                                   AutomationProperties.LiveSetting="Polite" />
+                        <Button Content="桌面图标管理…" Click="OpenDesktopControls" HorizontalAlignment="Left" />
+                    </StackPanel>
                 </StackPanel>
 
-                <local:BehaviorSettingsPage x:Name="BehaviorPage" Visibility="Collapsed" />
+                <DockPanel x:Name="HotZonesPage" Visibility="Collapsed">
+                    <Button DockPanel.Dock="Top" x:Name="ZoneMapButton" Content="打开可视化热区地图…" Click="OpenZoneMap"
+                            Visibility="Collapsed" HorizontalAlignment="Left" Margin="0,0,0,12" />
+                    <local:BehaviorSettingsPage x:Name="BehaviorPage" />
+                </DockPanel>
                 <local:HotkeySettingsPage x:Name="HotkeysPage" Visibility="Collapsed" />
                 <local:LayoutSettingsPage x:Name="LayoutPage" Visibility="Collapsed" />
             </Grid>

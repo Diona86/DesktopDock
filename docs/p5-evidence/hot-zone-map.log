@@ -1,0 +1,20 @@
+2026-11-24T09:26:30.963+00:00 PASS actual WPF editor shows three synthetic displays
+2026-11-24T09:26:30.964+00:00 PASS primary selection, all four physical handle visuals
+2026-11-24T09:26:30.965+00:00 PASS negative origins preserve physical desktop map ordering
+2026-11-24T09:26:30.965+00:00 PASS actual Dock position, right placement and scaled floating fallback
+2026-11-24T09:26:31.006+00:00 PASS each display derives its own default from its Dock placement
+2026-11-24T09:26:31.032+00:00 PASS start handle projects 90 physical pixels into 10 percentage points
+2026-11-24T09:26:31.041+00:00 PASS end handle adjusts independently
+2026-11-24T09:26:31.053+00:00 PASS right-edge outward coordinate is inverted and resolved at 150% DPI
+2026-11-24T09:26:31.065+00:00 PASS thickness grip and pixel geometry are DPI faithful
+2026-11-24T09:26:31.092+00:00 PASS actual conflict feedback on both rectangles
+2026-11-24T09:26:31.144+00:00 PASS real captured WPF maps three-displays-conflict.png bytes=49546
+2026-11-24T09:26:31.166+00:00 PASS apply touches only the selected monitor options
+2026-11-24T09:26:31.180+00:00 PASS numeric editing resolves map conflict
+2026-11-24T09:26:31.197+00:00 PASS disconnect retains detached draft and falls back to connected primary
+2026-11-24T09:26:31.210+00:00 PASS reconnection restores the previous display draft
+2026-11-24T09:26:31.247+00:00 PASS delete removes only the selected zone
+2026-11-24T09:26:31.269+00:00 PASS no zones is persisted explicitly rather than restoring defaults
+2026-11-24T09:26:31.291+00:00 PASS reset restores placement-specific default and handle visuals
+2026-11-24T09:26:31.321+00:00 PASS real captured WPF maps three-displays-final.png bytes=43985
+2026-11-24T09:26:31.432+00:00 END passed=19 failed=0 directory=D:\myapp\desk-design\artifacts\p5-hotzone-map-fixture\probe-3f52f651773c418eb091ce9ef168e6a8

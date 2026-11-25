@@ -1,5 +1,15 @@
 # Desktop Dock 项目文档包
 
+## Windows 11 多屏与桌面管理
+
+运行 `artifacts/DesktopDock-P5-win-x64/DesktopDock.exe` 后，可在设置左侧切换显示器。托盘提供所有 Dock 的显示、隐藏、热区暂停、桌面图标恢复和退出。
+
+- 「热区与行为」可打开可视化热区地图，按屏拖动边界并保存。
+- 「通用设置」可管理登录启动和桌面图标。隐藏桌面图标需要在对话框确认。手动恢复通过桌面右键「查看 → 显示桌面图标」。
+- 删除便携版前运行 `DesktopDock.exe --uninstall-cleanup`，可清理此版本的登录启动项。
+
+功能路径、验证范围和限制见 [P5 验收](docs/PHASE_5_ACCEPTANCE.md)。
+
 ## Windows 11 主题编辑器
 
 退出正在使用同一配置的旧版 Dock，再运行 `artifacts/DesktopDock-P4-win-x64/DesktopDock.exe`。在托盘菜单或「设置 → Dock 外观」打开「主题编辑器」。

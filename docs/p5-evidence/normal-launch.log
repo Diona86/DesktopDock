@@ -1,0 +1,3 @@
+2026-11-24T09:37:12.1120799+00:00 PASS normal launch 1 pid=22372 physicalMonitor=C9E56E49A34B35CA63C7FB0A originalProfileHash=529DE525BAD2D596A3C9890CB55BDC3164CDEF74263E44271E5F68883C525279
+2026-11-24T09:37:13.8248719+00:00 PASS normal launch 2 pid=4288 physicalMonitor=C9E56E49A34B35CA63C7FB0A originalProfileHash=529DE525BAD2D596A3C9890CB55BDC3164CDEF74263E44271E5F68883C525279
+END passed=2 failed=0. Only app-created processes with an isolated profile were terminated; no desktop visibility or startup registration was changed.

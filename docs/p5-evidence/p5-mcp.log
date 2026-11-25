@@ -1,0 +1,35 @@
+2026-11-25T01:23:09.339+00:00 START exe=D:\myapp\desk-design\artifacts\DesktopDock-P5-win-x64\DesktopDock.exe directory=D:\myapp\desk-design\artifacts\p5-release-p5-mcp-ffa12870cd6c447e8eefe3bd1a1bd3df native-system=True
+2026-11-25T01:23:10.713+00:00 PASS two native Dock HWNDs are assigned to separate screens and legacy items follow their original identity {'p5-left': {'x': -844, 'y': 731, 'width': 88, 'height': 64}, 'p5-right': {'x': 732, 'y': 886, 'width': 136, 'height': 64}}
+2026-11-25T01:23:11.670+00:00 PASS position, layout, lock and theme are independently applied and rendered
+2026-11-25T01:23:11.772+00:00 PASS actual map shows both monitors, Dock placements and screen-local zones
+2026-11-25T01:23:11.821+00:00 PASS WPF map drag edits startPercent in mixed-DPI geometry
+2026-11-25T01:23:11.829+00:00 PASS WPF map drag edits endPercent in mixed-DPI geometry
+2026-11-25T01:23:11.839+00:00 PASS WPF map drag edits offset in mixed-DPI geometry
+2026-11-25T01:23:11.850+00:00 PASS WPF map drag edits thickness in mixed-DPI geometry
+2026-11-25T01:23:11.864+00:00 PASS overlap highlights both conflicting zones
+2026-11-25T01:23:11.911+00:00 PASS WPF map screenshot with real conflict styling
+2026-11-25T01:23:11.930+00:00 PASS removing one zone clears the overlap warning
+2026-11-25T01:23:11.968+00:00 PASS map saves only the selected screen's zones
+2026-11-25T01:23:12.003+00:00 PASS deleting the last zone explicitly disables all zones on that screen
+2026-11-25T01:23:12.035+00:00 PASS reset removes the explicit list and restores the screen default
+2026-11-25T01:23:12.078+00:00 PASS automatic hiding applies independently
+2026-11-25T01:23:12.096+00:00 PASS target Dock ignores the other monitor and responds to its own live controller
+2026-11-25T01:23:12.103+00:00 PASS tray command hide reaches both Docks
+2026-11-25T01:23:12.122+00:00 PASS tray command show reaches both Docks
+2026-11-25T01:23:12.132+00:00 PASS tray command pause reaches both Docks
+2026-11-25T01:23:12.135+00:00 PASS tray command resume reaches both Docks
+2026-11-25T01:23:12.265+00:00 PASS tray settings path opens the real window
+2026-11-25T01:23:12.285+00:00 PASS settings includes an actual display selector
+2026-11-25T01:23:12.336+00:00 PASS primary swap, new resolution, DPI and layout keep each Dock bound to its saved identity {'p5-left': {'x': -844, 'y': -135, 'width': 88, 'height': 64}, 'p5-right': {'x': 1770, 'y': 219, 'width': 118, 'height': 142}}
+2026-11-25T01:23:12.339+00:00 PASS secondary Dock has its own on-disk configuration
+2026-11-25T01:23:12.367+00:00 PASS disconnect closes secondary Dock and keeps its exact profile bytes
+2026-11-25T01:23:12.416+00:00 PASS reconnect restores the same secondary configuration and theme
+2026-11-25T01:23:12.466+00:00 PASS legacy screen can disconnect without transferring its profile to the surviving display
+2026-11-25T01:23:12.536+00:00 PASS real desktop manager opens in read-only validation {'visible': True, 'windowsPreferenceHidden': False, 'explorerProcessId': 28764, 'state': 'Idle', 'canHide': False, 'canRestore': False, 'recoveryNeeded': False, 'message': '桌面图标当前可见。'}
+2026-11-25T01:23:12.548+00:00 PASS WPF desktop manager and manual recovery instructions
+2026-11-25T01:23:12.554+00:00 PASS read-only tray restore path leaves the actual desktop unchanged
+2026-11-25T01:23:12.572+00:00 PASS native Registry enable, detect, repeat, disable and uninstall ownership {'initial': 'Disabled', 'enabled': 'Enabled', 'repeated': 'Enabled', 'ownedValues': 1, 'other': 'OtherInstallation', 'otherPreserved': True, 'removed': 'Disabled', 'disabled': 'Disabled', 'conflict': 'Conflict', 'conflictPreserved': True, 'unrelatedPreserved': True}
+2026-11-25T01:23:12.589+00:00 PASS actual Windows restore hotkey registration, conflict and release {'registered': True, 'registerError': 0, 'secondRegistered': False, 'conflictError': 1409, 'unregistered': True, 'registeredAfterRelease': True, 'registerAfterReleaseError': 0, 'releasedAgain': True}
+2026-11-25T01:23:14.195+00:00 PASS restart preserves identity, independent settings, items, zones and theme
+2026-11-25T01:23:14.390+00:00 PASS tray exit shuts down the running Dock process cleanly
+2026-11-25T01:23:14.391+00:00 END passed=33 failed=0

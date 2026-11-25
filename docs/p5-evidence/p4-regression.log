@@ -1,0 +1,55 @@
+2026-11-25T01:23:04.261+00:00 START exe=D:\myapp\desk-design\artifacts\DesktopDock-P5-win-x64\DesktopDock.exe directory=D:\myapp\desk-design\artifacts\p5-release-p4-regression-aa6ff9cef1de4b74a0c9da3700c4b4af
+2026-11-25T01:23:09.412+00:00 PASS P4 MCP is advertised
+2026-11-25T01:23:11.637+00:00 PASS real theme editor window opens
+2026-11-25T01:23:11.638+00:00 PASS all three built-in themes load with Minimal as default
+2026-11-25T01:23:11.706+00:00 PASS real WPF PNG for dock-minimal bytes=3346
+2026-11-25T01:23:11.719+00:00 PASS minimal preview leaves the formal theme and configuration untouched
+2026-11-25T01:23:12.497+00:00 PASS real WPF PNG for dock-glass bytes=15013
+2026-11-25T01:23:12.515+00:00 PASS the glass capture includes its reserved shadow margins size=263x120
+2026-11-25T01:23:12.571+00:00 PASS real WPF PNG for editor-glass bytes=65434
+2026-11-25T01:23:12.588+00:00 PASS glass preview leaves the formal theme and configuration untouched
+2026-11-25T01:23:12.790+00:00 PASS real WPF PNG for dock-tech bytes=9770
+2026-11-25T01:23:12.802+00:00 PASS tech preview leaves the formal theme and configuration untouched
+2026-11-25T01:23:12.802+00:00 PASS three applied Dock themes have distinct WPF renderings
+2026-11-25T01:23:12.802+00:00 PASS built-ins differ in material, edge shape, grip, pattern and layout
+2026-11-25T01:23:13.033+00:00 PASS corner radius edit changes actual WPF border immediately
+2026-11-25T01:23:13.122+00:00 PASS undo restores the prior rendered radius
+2026-11-25T01:23:13.408+00:00 PASS opacity and icon size edit update the rendered brush and geometry
+2026-11-25T01:23:13.578+00:00 PASS reset restores the built-in theme defaults
+2026-11-25T01:23:13.642+00:00 PASS cancel discards the draft and leaves theme storage unchanged
+2026-11-25T01:23:13.659+00:00 PASS real WPF PNG for dock-cancelled bytes=3346
+2026-11-25T01:23:13.664+00:00 PASS cancel restores the actual Dock to its original look
+2026-11-25T01:23:14.619+00:00 PASS save as creates and applies a separate custom theme
+2026-11-25T01:23:14.886+00:00 PASS save updates the selected custom theme in place
+2026-11-25T01:23:14.906+00:00 PASS export writes the complete bounded theme file
+2026-11-25T01:23:14.914+00:00 PASS export uses the versioned standalone theme format
+2026-11-25T01:23:14.942+00:00 PASS reject wrong-version.docktheme without changing saved themes or active draft 主题文件版本 99 与当前版本 1 不兼容。
+2026-11-25T01:23:15.009+00:00 PASS reject asset-traversal.docktheme without changing saved themes or active draft 主题文件包含无效参数或不受支持的字段。
+2026-11-25T01:23:15.027+00:00 PASS reject executable-field.docktheme without changing saved themes or active draft 主题文件包含无效参数或不受支持的字段。
+2026-11-25T01:23:15.049+00:00 PASS reject out-of-range.docktheme without changing saved themes or active draft 主题文件包含无效参数或不受支持的字段。
+2026-11-25T01:23:15.068+00:00 PASS reject external-path.docktheme without changing saved themes or active draft 主题文件包含无效参数或不受支持的字段。
+2026-11-25T01:23:15.082+00:00 PASS reject duplicate-key.docktheme without changing saved themes or active draft 主题文件包含无效参数或不受支持的字段。
+2026-11-25T01:23:15.105+00:00 PASS reject oversized.docktheme without changing saved themes or active draft 主题文件不可为空，且最多 32 KiB。
+2026-11-25T01:23:15.115+00:00 PASS reject saved.docktheme without changing saved themes or active draft 该主题标识已存在。可用新的标识另存为自定义主题。
+2026-11-25T01:23:15.116+00:00 PASS export preserves the entire editable token set
+2026-11-25T01:23:15.673+00:00 PASS saved Dock-only parameter overrides the inherited value
+2026-11-25T01:23:16.017+00:00 PASS changing the global theme preserves independent Dock overrides
+2026-11-25T01:23:16.500+00:00 PASS this Dock can select a material different from the global theme
+2026-11-25T01:23:16.775+00:00 PASS restoring theme inheritance keeps the explicit local field
+2026-11-25T01:23:17.326+00:00 PASS hide drops logical visibility and pointer input immediately
+2026-11-25T01:23:17.327+00:00 PASS hide applies its configured fade to the real native window
+2026-11-25T01:23:17.712+00:00 PASS hide completes with the native window completely hidden
+2026-11-25T01:23:17.722+00:00 PASS reveal applies its configured slide with a visible intermediate frame
+2026-11-25T01:23:18.050+00:00 PASS reopening during the exit cancels the pending native hide
+2026-11-25T01:23:18.122+00:00 PASS performance mode removes the native WPF shadow and material blur
+2026-11-25T01:23:18.296+00:00 PASS reduced animations hide the native window immediately
+2026-11-25T01:23:18.360+00:00 PASS group opens without animation when the global switch is off
+2026-11-25T01:23:18.367+00:00 PASS real WPF PNG for group-effects-reduced bytes=7409
+2026-11-25T01:23:18.460+00:00 PASS both global toggles persist through editor save
+2026-11-25T01:23:20.051+00:00 PASS eighteen live WPF switches completed without a long stall median=67.0 ms p95=195.9 ms max=195.9 ms
+2026-11-25T01:23:20.080+00:00 PASS theme changes never rewrite P3 Dock options, groups or layout configuration
+2026-11-25T01:23:21.134+00:00 PASS restart restores global theme, Dock override and performance settings
+2026-11-25T01:23:22.619+00:00 PASS a valid imported file can be previewed before committing
+2026-11-25T01:23:22.673+00:00 PASS successful import and apply round-trip all supplied resources and tokens
+2026-11-25T01:23:24.063+00:00 PASS invalid saved theme configuration preserves its file and allows the default Dock to start
+2026-11-25T01:23:24.150+00:00 END passed=53 failed=0

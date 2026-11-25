@@ -3,7 +3,7 @@ using System.Windows.Interop;
 
 namespace DesktopDock;
 
-internal enum DockHotkeyAction { Toggle, Peek, Lock, Pause }
+internal enum DockHotkeyAction { Toggle, Peek, Lock, Pause, RestoreDesktop }
 
 internal sealed record DockHotkeyProbeResult(bool Registered, int RegisterError, bool SecondRegistered, int ConflictError,
     bool Unregistered, bool RegisteredAfterRelease, int RegisterAfterReleaseError, bool ReleasedAgain);
@@ -29,6 +29,21 @@ internal sealed class DockHotkeyService : IDisposable
     }
 
     internal IReadOnlyList<string> Errors => errors.AsReadOnly();
+    internal static HotkeyChord DesktopRestoreChord { get; } = new(7, 0x7A);
+
+    internal bool RegisterDesktopRestore(out string? error)
+    {
+        EnsureActive();
+        int id = NewId();
+        if (!Register(source.Handle, id, DesktopRestoreChord, out int win32Error))
+        {
+            error = RegistrationError(DockHotkeyAction.RestoreDesktop, win32Error);
+            return false;
+        }
+        registered.Add(DesktopRestoreChord, new Registration(id, DockHotkeyAction.RestoreDesktop));
+        error = null;
+        return true;
+    }
 
     internal void ApplyAtStartup(DockHotkeys hotkeys)
     {
@@ -222,6 +237,7 @@ internal sealed class DockHotkeyService : IDisposable
         DockHotkeyAction.Toggle => "呼出或收起",
         DockHotkeyAction.Peek => "临时显示",
         DockHotkeyAction.Lock => "锁定或解锁",
+        DockHotkeyAction.RestoreDesktop => "恢复桌面图标",
         _ => "暂停或恢复热区"
     };
 
