@@ -58,9 +58,23 @@ public sealed partial class DockSession : IDisposable
         }
     }
 
-    public DockItem AddItem(string target, string? name = null, Guid? parentId = null)
+    public DockItem AddItem(string target, string? name = null, Guid? parentId = null) =>
+        AddResolvedItem(DockTargets.Resolve(target), name, parentId);
+
+    internal DockItem AddApplication(string target, string? name = null)
     {
-        var (kind, value) = DockTargets.Resolve(target);
+        var application = DockTargets.Resolve(target);
+        if (application.Kind is not (DockItemKind.Application or DockItemKind.Shortcut))
+            throw new ArgumentException("请选择 EXE 程序或 LNK 快捷方式。");
+
+        return AddResolvedItem(application, name, null);
+    }
+
+    internal DockItem AddFileExplorer() => AddApplication(DockTargets.FileExplorerExecutable, "文件资源管理器");
+
+    private DockItem AddResolvedItem((DockItemKind Kind, string Target) resolved, string? name, Guid? parentId)
+    {
+        var (kind, value) = resolved;
         string itemName = string.IsNullOrWhiteSpace(name) ? DockTargets.DefaultName(kind, value) : name.Trim();
         var item = new DockItem(Guid.NewGuid(), itemName, kind, value);
         Change(state => OrderTree(state with

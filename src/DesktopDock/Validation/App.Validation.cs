@@ -20,8 +20,10 @@ public partial class App
     [
         new("dock_state", "Inspect the test profile, visible Dock controls, layout, tooltip configuration and loaded icons.",
             """{"type":"object","additionalProperties":false}"""),
-        new("dock_add", "Add explicit filesystem paths or HTTP(S) URLs to the test Dock. Input drop uses the file-drop handler.",
-            """{"type":"object","properties":{"targets":{"type":"array","items":{"type":"string"},"minItems":1},"input":{"enum":["picker","drop"]}},"required":["targets"],"additionalProperties":false}"""),
+        new("dock_add", "Add explicit paths or URLs to the test Dock. Application input uses the application picker validation. Drop input uses the file-drop handler.",
+            """{"type":"object","properties":{"targets":{"type":"array","items":{"type":"string"},"minItems":1},"input":{"enum":["picker","application","drop"]}},"required":["targets"],"additionalProperties":false}"""),
+        new("dock_add_explorer", "Add the Windows File Explorer entry through the same action as the application menu.",
+            """{"type":"object","additionalProperties":false}"""),
         new("dock_edit", "Edit a Dock reference and optionally replace or clear its display icon.",
             """{"type":"object","properties":{"id":{"type":"string","format":"uuid"},"target":{"type":"string"},"name":{"type":"string"},"iconPath":{"type":["string","null"]}},"required":["id","target","name"],"additionalProperties":false}"""),
         new("dock_remove", "Remove one Dock reference from the test profile.",
@@ -109,10 +111,18 @@ public partial class App
                     foreach (string target in targets)
                         testSession.AddItem(target);
                 }
+                else if (input == "application")
+                {
+                    foreach (string target in targets)
+                        testSession.AddApplication(target);
+                }
                 else
                 {
-                    throw new ArgumentException("Input must be picker or drop.");
+                    throw new ArgumentException("Input must be picker, application, or drop.");
                 }
+                return McpReply(ReadTestState());
+            case "dock_add_explorer":
+                testSession.AddFileExplorer();
                 return McpReply(ReadTestState());
             case "dock_edit":
                 DockItem selected = ReadTestItem(args);

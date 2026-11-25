@@ -30,8 +30,7 @@ public static class DockTargetLauncher
             return;
         }
 
-        string explorer = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe");
-        var start = new ProcessStartInfo(explorer) { Arguments = $"/select,\"{target}\"" };
+        var start = new ProcessStartInfo(DockTargets.FileExplorerExecutable) { Arguments = $"/select,\"{target}\"" };
         Start(start, "Windows 无法在文件资源管理器中定位所选项目。");
     }
 

@@ -202,30 +202,56 @@ public partial class SettingsWindow : Window
 
     private void ToggleDock(object sender, RoutedEventArgs e) => setDockVisible(!dockVisible);
 
+    private void OpenApplicationMenu(object sender, RoutedEventArgs e)
+    {
+        var button = (Button)sender;
+        button.ContextMenu.PlacementTarget = button;
+        button.ContextMenu.IsOpen = true;
+    }
+
+    private void AddApplications(object sender, RoutedEventArgs e) => SelectFiles(
+        "添加应用", "应用程序和快捷方式|*.exe;*.lnk", path => session.AddApplication(path));
+
+    private void AddFileExplorer(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            SelectAddedItem(session.AddFileExplorer());
+            Status.Text = "已添加文件资源管理器。";
+        }
+        catch (Exception error) when (DockDialogs.IsUserFacing(error))
+        {
+            DockDialogs.Error(this, "无法添加文件资源管理器", error);
+        }
+    }
+
     private void AddFiles(object sender, RoutedEventArgs e)
+        => SelectFiles("添加文件", "所有文件|*.*|应用程序和快捷方式|*.exe;*.lnk", path => session.AddItem(path));
+
+    private void SelectFiles(string title, string filter, Func<string, DockItem> addItem)
     {
         var dialog = new OpenFileDialog
         {
-            Title = "添加文件或应用",
-            Filter = "所有文件|*.*|应用和快捷方式|*.exe;*.lnk",
+            Title = title,
+            Filter = filter,
             CheckFileExists = true,
             DereferenceLinks = false,
             Multiselect = true
         };
         if (dialog.ShowDialog(this) == true)
-            AddTargets(dialog.FileNames);
+            AddTargets(dialog.FileNames, addItem);
     }
 
     private void AddFolders(object sender, RoutedEventArgs e)
     {
         var dialog = new OpenFolderDialog { Title = "添加文件夹", Multiselect = true };
         if (dialog.ShowDialog(this) == true)
-            AddTargets(dialog.FolderNames);
+            AddTargets(dialog.FolderNames, path => session.AddItem(path));
     }
 
     private void AddUrl(object sender, RoutedEventArgs e) => DockDialogs.Edit(this, session, null);
 
-    private void AddTargets(IEnumerable<string> paths)
+    private void AddTargets(IEnumerable<string> paths, Func<string, DockItem> addItem)
     {
         int count = 0;
         var errors = new List<string>();
@@ -233,9 +259,9 @@ public partial class SettingsWindow : Window
         {
             try
             {
-                DockItem item = session.AddItem(path);
+                DockItem item = addItem(path);
                 count++;
-                ItemList.SelectedItem = ItemList.Items.Cast<ItemRow>().FirstOrDefault(row => row.Item.Id == item.Id);
+                SelectAddedItem(item);
             }
             catch (Exception error) when (DockDialogs.IsUserFacing(error))
             {
@@ -246,6 +272,9 @@ public partial class SettingsWindow : Window
         if (errors.Count > 0)
             DockDialogs.Error(this, "部分项目无法添加", new ArgumentException(string.Join(Environment.NewLine, errors.Take(4))));
     }
+
+    private void SelectAddedItem(DockItem item) =>
+        ItemList.SelectedItem = ItemList.Items.Cast<ItemRow>().FirstOrDefault(row => row.Item.Id == item.Id);
 
     private void SessionChanged(object? sender, EventArgs e)
     {

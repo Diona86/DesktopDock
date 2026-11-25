@@ -2,6 +2,9 @@ namespace DesktopDock;
 
 internal static class DockTargets
 {
+    internal static string FileExplorerExecutable =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe");
+
     internal static (DockItemKind Kind, string Target) Resolve(string target)
     {
         string value = TargetText(target);

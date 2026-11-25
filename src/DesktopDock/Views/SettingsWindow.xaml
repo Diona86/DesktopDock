@@ -70,7 +70,16 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <WrapPanel Margin="0,0,0,12">
-                        <Button Style="{StaticResource PrimaryButton}" Content="添加文件" Click="AddFiles" Margin="0,0,8,5" />
+                        <Button Style="{StaticResource PrimaryButton}" Content="添加应用" Click="OpenApplicationMenu" Margin="0,0,8,5"
+                                AutomationProperties.HelpText="可选择程序文件、快捷方式，或添加 Windows 文件资源管理器">
+                            <Button.ContextMenu>
+                                <ContextMenu Placement="Bottom">
+                                    <MenuItem Header="选择程序文件…" Click="AddApplications" />
+                                    <MenuItem Header="文件资源管理器" Click="AddFileExplorer" />
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
+                        <Button Content="添加文件" Click="AddFiles" Margin="0,0,8,5" />
                         <Button Content="添加文件夹" Click="AddFolders" Margin="0,0,8,5" />
                         <Button Content="添加网址" Click="AddUrl" Margin="0,0,0,5" />
                     </WrapPanel>
