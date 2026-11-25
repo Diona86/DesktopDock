@@ -51,16 +51,7 @@ internal sealed partial class DesktopIconService
         path = Path.Combine(configurationDirectory, "desktop-icons.json");
         try
         {
-            using var stream = File.OpenRead(path);
-            if (stream.Length > JournalLimit)
-                throw new InvalidDataException("记录文件超出大小限制。");
-            record = JsonSerializer.Deserialize<Journal>(stream, JsonOptions);
-            if (record?.Version != Version || record.Owner == Guid.Empty || record.Operation == Guid.Empty ||
-                record.Before is not { Visible: true, WindowsHidden: false } before ||
-                before.Shell.ProcessId == 0 || before.Shell.ProcessStartTicks <= 0 ||
-                before.Shell.ShellWindow == 0 || before.Shell.IconView == 0 ||
-                record.Updated < record.Started)
-                throw new InvalidDataException("记录格式无效。");
+            record = ReadJournal(path);
         }
         catch (FileNotFoundException) { }
         catch (DirectoryNotFoundException) { }
@@ -70,6 +61,33 @@ internal sealed partial class DesktopIconService
             journalError = $"无法读取桌面图标恢复记录，原文件已保留。{error.Message}";
         }
         Status = MakeStatus();
+    }
+
+    internal static bool HasUnresolvedRecovery(string configurationDirectory)
+    {
+        try
+        {
+            Journal journal = ReadJournal(Path.Combine(configurationDirectory, "desktop-icons.json"));
+            return journal.Phase is not (Phase.Restored or Phase.UserChanged);
+        }
+        catch (Exception error) when (error is FileNotFoundException or DirectoryNotFoundException)
+        {
+            return false;
+        }
+    }
+
+    private static Journal ReadJournal(string path)
+    {
+        using var stream = File.OpenRead(path);
+        if (stream.Length > JournalLimit)
+            throw new InvalidDataException("记录文件超出大小限制。");
+        Journal? journal = JsonSerializer.Deserialize<Journal>(stream, JsonOptions);
+        if (journal?.Version != Version || journal.Owner == Guid.Empty || journal.Operation == Guid.Empty ||
+            journal.Before is not { Visible: true, WindowsHidden: false } before || before.Shell == null ||
+            before.Shell.ProcessId == 0 || before.Shell.ProcessStartTicks <= 0 ||
+            before.Shell.ShellWindow == 0 || before.Shell.IconView == 0 || journal.Updated < journal.Started)
+            throw new InvalidDataException("记录格式无效。");
+        return journal;
     }
 
     internal DesktopIconStatus Status { get; private set; }

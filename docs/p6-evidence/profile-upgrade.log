@@ -1,0 +1,39 @@
+Completed 2026-11-25T01:36:36.6437585+00:00 dir=D:\myapp\desk-design\artifacts\p6-profile-upgrade-final-b4e12127375249b386342b62dc481587
+PASS 01 Read-only preflight does not create a missing profile.
+PASS 02 A fresh install has an empty verified backup and an untouched data location.
+PASS 03 Schema 1 passes preflight without rewriting the original.
+PASS 04 Schema 1 preserves external references.
+PASS 05 Schema 1 reaches current format on save and retains any migration source.
+PASS 06 Schema 2 passes preflight without rewriting the original.
+PASS 07 Schema 2 preserves external references.
+PASS 08 Schema 2 reaches current format on save and retains any migration source.
+PASS 09 Schema 3 passes preflight without rewriting the original.
+PASS 10 Schema 3 preserves external references.
+PASS 11 Schema 3 reaches current format on save and retains any migration source.
+PASS 12 Schema 4 passes preflight without rewriting the original.
+PASS 13 Schema 4 preserves external references.
+PASS 14 Schema 4 reaches current format on save and retains any migration source.
+PASS 15 Upgrade refuses an open root configuration instead of closing it.
+PASS 16 Upgrade refuses an open secondary-display configuration.
+PASS 17 The helper rejects a downgrade.
+PASS 18 A backup cannot be placed inside the live configuration.
+PASS 19 The manifest records version identity and exactly six owned files.
+PASS 20 Disconnected display state and theme settings are copied. External targets and exports remain outside the snapshot.
+PASS 21 Unsupported theme data blocks preparation before application files are changed.
+PASS 22 Unsupported display index blocks preparation.
+PASS 23 Unknown configuration schema is refused.
+PASS 24 Compatibility failure leaves the input byte-for-byte intact.
+PASS 25 Explicit restore reinstates the selected checked configuration even after an incompatible write.
+PASS 26 The durable pre-restore checkpoint preserves the incompatible version.
+PASS 27 Restore preserves current desktop recovery state, diagnostics and unrelated documents.
+PASS 28 Corrupted snapshot hash blocks restore before the live profile changes.
+PASS 29 A failed snapshot check leaves live bytes intact.
+PASS 30 A forged backup manifest cannot name files outside the owned configuration paths.
+PASS 31 A path traversal attempt leaves both live and external files untouched.
+PASS 32 A locked destination causes the attempted restore to roll back.
+PASS 33 Partial restore rolls back earlier successful replacements.
+PASS 34 Uninstall data removal preserves a pending desktop visibility recovery record.
+PASS 35 Refused removal retains live recovery and configuration data.
+PASS 36 Corrupt desktop journal blocks data removal.
+PASS 37 Explicit uninstall cleanup removes only recognized state files and leaves user files byte-for-byte intact.
+END passed=37 failed=0

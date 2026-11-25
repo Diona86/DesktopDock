@@ -1,0 +1,17 @@
+PASS monitor count=1 physical=0,0,2560,1440 work=0,0,2560,1440 scale=1 stableInterfaceId=True
+Pointer sample available=True
+Live foreground state=Ordinary shell=5 automatic=True
+Observed Ordinary for expected=Ordinary maximized=False covers=False hasFrame=True sameMonitor=True
+PASS native Ordinary classification
+Observed Maximized for expected=Maximized maximized=True covers=True hasFrame=True sameMonitor=True
+PASS native Maximized classification
+PASS explicit allow rule for the native maximized fixture executable
+Observed BorderlessFullScreen for expected=BorderlessFullScreen maximized=False covers=True hasFrame=False sameMonitor=True
+PASS native BorderlessFullScreen classification
+Generated local AVI 64x48, 12 fps, 6 seconds
+Observed BorderlessFullScreen for expected=BorderlessFullScreen maximized=False covers=True hasFrame=False sameMonitor=True
+PASS native BorderlessFullScreen classification
+PASS local fullscreen WPF video playback frame=64x48 positionMs=622; automatic reveal blocked
+PASS invalid HWND policy blocks automatic reveal
+SKIP native shortcut registration at caller's request
+Passive outside mouse hook installed=True error=0 reinstalled=True retryError=0; button delivery not sampled

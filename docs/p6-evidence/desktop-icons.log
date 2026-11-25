@@ -1,0 +1,31 @@
+PASS startup does not change visibility or write a record
+PASS operation is journaled before the hide request
+PASS confirmed hide observes changed visibility with original preference intact
+PASS restore request is journaled before mutation
+PASS explicit restore returns the view to its original visibility
+PASS test file path and content remain intact
+PASS an existing Windows hide preference never gets an ownership record
+PASS manual Windows preference change releases ownership
+PASS exit preserves later Windows settings
+PASS normal exit restores Dock-owned visibility on the same Explorer generation
+PASS normal exit fixture starts with an accepted hide still pending
+PASS normal exit confirms a pending hide before restoring the same Explorer view
+PASS normal exit bounds observation and does not restore an unconfirmed hide
+PASS accepted asynchronous request still awaits an observed state change
+PASS observation confirms asynchronous hide
+PASS external visibility change releases ownership even with the same Windows preference
+PASS reopening a prior-run hide record offers recovery
+PASS exit leaves the previous process's recovery for an explicit decision
+PASS explicit recovery on the same Explorer generation succeeds
+PASS missing Explorer view disables restore while ownership is uncertain
+PASS new Explorer generation triggers manual recovery and invalidates captured HWND
+PASS exit does not force visibility on the replacement Explorer
+PASS failed request preserves observed state and avoids claiming ownership
+PASS journal write failure stops the native mutation before it is requested
+PASS invalid journal stays intact and disables writes
+NATIVE shell_pid=28764 list_visible=True windows_hide=False
+PASS native probe is read-only and leaves no recovery data
+PASS isolated cross-process Win32 HWND starts visible offscreen
+PASS ShowWindowAsync hides the isolated HWND
+PASS ShowWindowAsync restores the isolated HWND without changing Explorer
+END passed=29 failed=0

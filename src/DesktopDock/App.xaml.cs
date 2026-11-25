@@ -19,11 +19,12 @@ public partial class App : Application
     {
         base.OnStartup(e);
         validationMode = e.Args.Contains("--mcp-stdio", StringComparer.Ordinal);
+        bool releaseCommand = IsReleaseCommand(e.Args);
         try
         {
-            if (e.Args is ["--uninstall-cleanup"])
+            if (releaseCommand)
             {
-                CreateStartupRegistration().RemoveForUninstall();
+                RunReleaseCommand(e.Args);
                 ExitApp(0);
                 return;
             }
@@ -31,6 +32,7 @@ public partial class App : Application
             if (validationMode && (!Console.IsInputRedirected || !Console.IsOutputRedirected))
                 throw new ArgumentException("MCP 模式需要重定向 stdin 和 stdout。");
             session = DockSession.Open(directory);
+            AttachDiagnostics(directory);
             InitializeThemes(directory);
             InitializeDisplays(directory, session);
             InitializeDesktopIntegration(directory);
@@ -46,7 +48,8 @@ public partial class App : Application
         }
         catch (Exception exception) when (DockDialogs.IsUserFacing(exception) || exception is System.Security.SecurityException)
         {
-            if (validationMode)
+            diagnostics?.Record("startup_error", exception);
+            if (validationMode || releaseCommand)
                 WriteMcpError(exception);
             else
                 DockDialogs.Error(null, "无法启动 Desktop Dock", exception);
@@ -56,6 +59,7 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        DetachDiagnostics(e.ApplicationExitCode);
         DetachThemes();
         DisposeDesktopIntegration();
         DisposeDisplays();
@@ -166,6 +170,7 @@ public partial class App : Application
             settings.ConfigureSystemControls(ShowZoneMap, ShowDesktopManager, startupRegistration,
                 () => legacyDock.Profile.Options.GlobalPositionLocked, SetGlobalPositionLock,
                 () => legacyDock.Profile.Options.Behavior.Hotkeys);
+            settings.SetDiagnosticExporter(ExportDiagnostics);
             UpdateDisplayChoices();
             settings.Show();
         }

@@ -1,0 +1,235 @@
+{
+  "environment": {
+    "executable": "D:\\myapp\\desk-design\\artifacts\\releases\\1.0.0\\DesktopDock-win-x64\\DesktopDock.exe",
+    "assembly_sha256": "D2581A2C0EBBD6A9FC341F9BFD439A806951A392B9999FC3D412E02458E5BDE2",
+    "soak_seconds_requested": 600,
+    "logical_processors": 14,
+    "icons_per_dock": 12,
+    "topology": "two real WPF resident windows with isolated synthetic monitor geometry"
+  },
+  "dual_dock_continuous": {
+    "process": {
+      "elapsed_s": 600.003,
+      "cpu_pct_one_core": 0.15365,
+      "cpu_pct_machine": 0.01097,
+      "working_set_mib": 209.629,
+      "private_mib": 124.867,
+      "delta_working_set_mib": 9.496,
+      "delta_private_mib": 5.539
+    },
+    "samples": [
+      {
+        "uptime_s": 20.004,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 3.899,
+        "working_set_mib": 200.082,
+        "private_mib": 119.094
+      },
+      {
+        "uptime_s": 40.062,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 50.865,
+        "working_set_mib": 202.297,
+        "private_mib": 118.051
+      },
+      {
+        "uptime_s": 60.071,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 4.542,
+        "working_set_mib": 207.266,
+        "private_mib": 123.031
+      },
+      {
+        "uptime_s": 80.084,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 10.283,
+        "working_set_mib": 202.805,
+        "private_mib": 119.117
+      },
+      {
+        "uptime_s": 100.087,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 2.448,
+        "working_set_mib": 203.199,
+        "private_mib": 119.438
+      },
+      {
+        "uptime_s": 120.129,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 16.32,
+        "working_set_mib": 201.359,
+        "private_mib": 117.207
+      },
+      {
+        "uptime_s": 140.134,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 3.384,
+        "working_set_mib": 201.5,
+        "private_mib": 117.906
+      },
+      {
+        "uptime_s": 160.14,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 5.398,
+        "working_set_mib": 201.992,
+        "private_mib": 118.844
+      },
+      {
+        "uptime_s": 180.145,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 3.399,
+        "working_set_mib": 202.105,
+        "private_mib": 118.914
+      },
+      {
+        "uptime_s": 200.153,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 7.743,
+        "working_set_mib": 202.176,
+        "private_mib": 119.602
+      },
+      {
+        "uptime_s": 220.159,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 5.142,
+        "working_set_mib": 204.281,
+        "private_mib": 121.656
+      },
+      {
+        "uptime_s": 240.165,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 3.952,
+        "working_set_mib": 202.086,
+        "private_mib": 119.617
+      },
+      {
+        "uptime_s": 260.185,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 18.939,
+        "working_set_mib": 203.656,
+        "private_mib": 119.523
+      },
+      {
+        "uptime_s": 280.191,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 4.358,
+        "working_set_mib": 203.715,
+        "private_mib": 119.863
+      },
+      {
+        "uptime_s": 300.196,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 4.289,
+        "working_set_mib": 204.152,
+        "private_mib": 119.906
+      },
+      {
+        "uptime_s": 320.202,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 2.653,
+        "working_set_mib": 210.613,
+        "private_mib": 125.102
+      },
+      {
+        "uptime_s": 340.208,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 4.756,
+        "working_set_mib": 204.133,
+        "private_mib": 118.445
+      },
+      {
+        "uptime_s": 360.211,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 2.501,
+        "working_set_mib": 204.324,
+        "private_mib": 119.137
+      },
+      {
+        "uptime_s": 380.214,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 1.947,
+        "working_set_mib": 204.32,
+        "private_mib": 119.133
+      },
+      {
+        "uptime_s": 400.22,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 2.321,
+        "working_set_mib": 204.402,
+        "private_mib": 119.227
+      },
+      {
+        "uptime_s": 420.229,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 7.946,
+        "working_set_mib": 205.336,
+        "private_mib": 120.508
+      },
+      {
+        "uptime_s": 440.233,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 3.674,
+        "working_set_mib": 205.32,
+        "private_mib": 120.473
+      },
+      {
+        "uptime_s": 460.24,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 5.779,
+        "working_set_mib": 209.238,
+        "private_mib": 124.125
+      },
+      {
+        "uptime_s": 480.244,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 3.387,
+        "working_set_mib": 203.242,
+        "private_mib": 117.875
+      },
+      {
+        "uptime_s": 500.249,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 3.301,
+        "working_set_mib": 203.293,
+        "private_mib": 118.418
+      },
+      {
+        "uptime_s": 520.254,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 3.661,
+        "working_set_mib": 203.312,
+        "private_mib": 118.43
+      },
+      {
+        "uptime_s": 540.258,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 3.143,
+        "working_set_mib": 203.301,
+        "private_mib": 118.418
+      },
+      {
+        "uptime_s": 560.264,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 4.115,
+        "working_set_mib": 203.371,
+        "private_mib": 118.484
+      },
+      {
+        "uptime_s": 580.269,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 2.15,
+        "working_set_mib": 203.367,
+        "private_mib": 118.516
+      },
+      {
+        "uptime_s": 600.003,
+        "visible_docks": 2,
+        "state_roundtrip_ms": 3.175,
+        "working_set_mib": 209.629,
+        "private_mib": 124.867
+      }
+    ]
+  },
+  "passed": 2,
+  "failed": 0
+}

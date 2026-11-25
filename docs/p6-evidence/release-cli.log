@@ -1,0 +1,12 @@
+2026-11-25T01:37:00.974+00:00 PASS real release WinExe prints version 1.0.0 when redirected
+2026-11-25T01:37:01.865+00:00 PASS verify-profile accepts old Dock schema with exact source bytes
+2026-11-25T01:37:02.756+00:00 PASS prepare-upgrade returns an existing isolated snapshot and leaves live bytes untouched
+2026-11-25T01:37:04.775+00:00 PASS actual WPF startup opens the legacy profile and reports package version
+2026-11-25T01:37:04.792+00:00 PASS real application diagnostics are written with startup event and omit private item details
+2026-11-25T01:37:04.988+00:00 PASS exclusive running profile rejects upgrade without writing
+2026-11-25T01:37:05.094+00:00 PASS first WPF settings save migrates schema and retains original migration backup
+2026-11-25T01:37:05.487+00:00 PASS explicit restore returns a safety checkpoint and original bytes
+2026-11-25T01:37:05.849+00:00 PASS incompatible theme stops upgrade without creating a usable snapshot or changing the profile
+2026-11-25T01:37:06.210+00:00 PASS unsafe recovery journal prevents profile deletion
+2026-11-25T01:37:06.541+00:00 PASS explicit cleanup removes owned config and preserves unrelated data and the original target
+2026-11-25T01:37:06.541+00:00 END passed=11 failed=0

@@ -15,6 +15,17 @@ public partial class SettingsWindow
     private Func<bool>? readGlobalLock;
     private Action<bool>? saveGlobalLock;
     private Func<DockHotkeys>? readGlobalHotkeys;
+    private Action? exportDiagnostics;
+
+    internal void SetDiagnosticExporter(Action action)
+    {
+        exportDiagnostics = action;
+        ExportDiagnosticsButton.Visibility = Visibility.Visible;
+    }
+
+    internal void SetDiagnosticStatus(string message) => Status.Text = message;
+
+    private void ExportDiagnostics(object sender, RoutedEventArgs e) => exportDiagnostics?.Invoke();
 
     internal void SetDisplayChoices(IReadOnlyList<DockMonitor> monitors, string? selected, Action<string> switchDisplay)
     {

@@ -4,4 +4,6 @@
 /src/**/obj/
 /tests/**/bin/
 /tests/**/obj/
+/installer/**/bin/
+/installer/**/obj/
 /artifacts/

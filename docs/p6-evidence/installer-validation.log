@@ -1,0 +1,31 @@
+2026-11-25T01:58:21.2392621+00:00 blocked-backup-permission exit=7 log=D:\myapp\desk-design\artifacts\p6-final-install-exercise-870bd2e8014346039b39787fee300c14\blocked-backup-permission.log
+2026-11-25T01:58:21.3152559+00:00 PASS backup permission denial blocks setup before program files or profile changes
+2026-11-25T01:58:32.2868310+00:00 clean-install exit=0 log=D:\myapp\desk-design\artifacts\p6-final-install-exercise-870bd2e8014346039b39787fee300c14\clean-install.log
+2026-11-25T01:58:32.3319550+00:00 PASS installer runs without elevation prompt into the selected isolated path
+2026-11-25T01:58:32.3710161+00:00 PASS installed version and program files are registered
+2026-11-25T01:58:32.3973587+00:00 PASS desktop icon and login startup are opt-in
+2026-11-25T01:58:32.4505290+00:00 PASS real Start menu shortcut points to the installed executable
+2026-11-25T01:58:32.4786476+00:00 PASS install backs up the old schema without rewriting it
+2026-11-25T01:58:35.7933028+00:00 blocked-running-profile exit=7 log=D:\myapp\desk-design\artifacts\p6-final-install-exercise-870bd2e8014346039b39787fee300c14\blocked-running-profile.log
+2026-11-25T01:58:35.8148324+00:00 PASS upgrade stops when another process owns the profile lease
+2026-11-25T01:58:43.3059002+00:00 blocked-incompatible-theme exit=7 log=D:\myapp\desk-design\artifacts\p6-final-install-exercise-870bd2e8014346039b39787fee300c14\blocked-incompatible-theme.log
+2026-11-25T01:58:43.3293815+00:00 PASS incompatible themes block upgrade and retain original bytes
+2026-11-25T01:58:47.4313173+00:00 interrupted-upgrade worker=13088 exit=-1 log=D:\myapp\desk-design\artifacts\p6-final-install-exercise-870bd2e8014346039b39787fee300c14\interrupted-upgrade.log
+2026-11-25T01:58:47.4539937+00:00 PASS interruption after first new-file write preserves the old executable and profile
+2026-11-25T01:58:58.5172828+00:00 upgrade exit=0 log=D:\myapp\desk-design\artifacts\p6-final-install-exercise-870bd2e8014346039b39787fee300c14\upgrade.log
+2026-11-25T01:58:58.5435752+00:00 PASS upgrade installs a separately versioned program
+2026-11-25T01:58:58.5740283+00:00 PASS successful upgrade retains prior executable for recovery
+2026-11-25T01:58:58.5965836+00:00 PASS opt-in login startup targets the new version in an isolated non-Run key
+2026-11-25T01:58:58.6346943+00:00 PASS desktop task creates a real shortcut in the isolated junction-free directory
+2026-11-25T01:58:59.5938272+00:00 blocked-downgrade exit=7 log=D:\myapp\desk-design\artifacts\p6-final-install-exercise-870bd2e8014346039b39787fee300c14\blocked-downgrade.log
+2026-11-25T01:58:59.6256676+00:00 PASS older installer stops before replacing the newer installation
+2026-11-25T01:59:01.7240729+00:00 blocked-uninstall-recovery exit=1 log=D:\myapp\desk-design\artifacts\p6-final-install-exercise-870bd2e8014346039b39787fee300c14\blocked-uninstall-recovery.log
+2026-11-25T01:59:01.7555522+00:00 PASS unresolved desktop recovery blocks data removal and retains installed program, profile and startup entry
+2026-11-25T01:59:03.8183602+00:00 uninstall-retain exit=0 log=D:\myapp\desk-design\artifacts\p6-final-install-exercise-870bd2e8014346039b39787fee300c14\uninstall-retain.log
+2026-11-25T01:59:03.8610249+00:00 PASS uninstall removes installed versions and registration
+2026-11-25T01:59:03.8990393+00:00 PASS default uninstall retains configuration and user-replaced shortcut
+2026-11-25T01:59:13.9425253+00:00 reinstall exit=0 log=D:\myapp\desk-design\artifacts\p6-final-install-exercise-870bd2e8014346039b39787fee300c14\reinstall.log
+2026-11-25T01:59:13.9832486+00:00 PASS installer respects an existing unowned shortcut
+2026-11-25T01:59:16.8034077+00:00 uninstall-remove-profile exit=0 log=D:\myapp\desk-design\artifacts\p6-final-install-exercise-870bd2e8014346039b39787fee300c14\uninstall-remove-profile.log
+2026-11-25T01:59:16.8309509+00:00 PASS explicit data cleanup preserves project targets, unrelated files and backups
+2026-11-25T01:59:16.8478050+00:00 END passed=19 failed=0

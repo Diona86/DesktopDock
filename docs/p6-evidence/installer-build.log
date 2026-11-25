@@ -1,0 +1,11 @@
+Inno Setup 7.1.1 x64 official portable compiler
+vendor=https://github.com/jrsoftware/issrc/releases/download/is-7_1_1/innosetup-7.1.1-x64.exe
+vendor_sha256=8A5A6711C3766A6E5FB74F280BA0E3551E719CE94538D901FDBD1F8F9920B3F0
+vendor_signature=Valid CN=Pyrsys B.V., O=Pyrsys B.V., S=Noord-Holland, C=NL
+dotnet_sdk=10.0.404
+payload=artifacts/p6-final-app/DesktopDock-win-x64
+installer=artifacts/releases/1.0.0/DesktopDock-1.0.0-win-x64-setup.exe
+installer_fileversion=1.0.0
+installer_bytes=84412181
+installer_sha256=BB9CC95AB5F3F0BB09532773345539A5DA25CB081BB1401E23FF336B0D4991C0
+installer_signature=NotSigned

@@ -124,7 +124,8 @@
                     </StackPanel>
                 </ScrollViewer>
 
-                <StackPanel x:Name="GeneralPage" Visibility="Collapsed" MaxWidth="460" HorizontalAlignment="Left">
+                <ScrollViewer x:Name="GeneralPage" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                <StackPanel MaxWidth="460" HorizontalAlignment="Left">
                     <TextBlock Style="{StaticResource FieldLabel}" Text="显示与位置" />
                     <CheckBox x:Name="StartupVisibilityInput" Content="常驻模式启动时显示 Dock" Margin="0,9,0,13" />
                     <CheckBox x:Name="GlobalLockInput" Content="全局锁定 Dock 位置" Margin="0,0,0,13" />
@@ -136,8 +137,11 @@
                         <TextBlock x:Name="WindowsStartupStatus" Style="{StaticResource FieldHint}" TextWrapping="Wrap" Margin="0,0,0,11"
                                    AutomationProperties.LiveSetting="Polite" />
                         <Button Content="桌面图标管理…" Click="OpenDesktopControls" HorizontalAlignment="Left" />
+                        <Button x:Name="ExportDiagnosticsButton" Content="导出诊断…" Click="ExportDiagnostics"
+                                Visibility="Collapsed" HorizontalAlignment="Left" Margin="0,8,0,0"/>
                     </StackPanel>
                 </StackPanel>
+                </ScrollViewer>
 
                 <DockPanel x:Name="HotZonesPage" Visibility="Collapsed">
                     <Button DockPanel.Dock="Top" x:Name="ZoneMapButton" Content="打开可视化热区地图…" Click="OpenZoneMap"

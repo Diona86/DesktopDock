@@ -1,0 +1,42 @@
+2026-11-25T01:38:46.312+00:00 START {"executable": "D:\\myapp\\desk-design\\artifacts\\p6-final-app\\DesktopDock-win-x64\\DesktopDock.exe", "app_sha256": "9270C974A421ED64D5C354A4BE7E6AEF4FA5E947FE3F14F2EFF292963391A8D4", "assembly_sha256": "D2581A2C0EBBD6A9FC341F9BFD439A806951A392B9999FC3D412E02458E5BDE2", "platform": "Windows-11-10.0.26200-SP0", "logical_processors": 14, "python": "3.14.7", "soak_seconds_requested": 180, "fresh_start_runs": 5, "resident_idle_seconds": 15, "icon_items_per_dock": 12} output=D:\myapp\desk-design\artifacts\p6-perf-release-d6f036ca3aec4617a8e348e45c3146d8
+2026-11-25T01:38:57.362+00:00 PASS fresh process MCP readiness reaches a visible native Dock on every run
+2026-11-25T01:38:57.363+00:00 METRIC startup_mcp_ready {"count":5,"median_ms":2050.369,"p95_ms":2203.579,"min_ms":1400.649,"max_ms":2203.579,"samples_ms":[2050.369,1400.649,2061.007,2203.579,1879.066]}
+2026-11-25T01:38:57.364+00:00 METRIC startup_native_visible_observed {"count":5,"median_ms":2197.952,"p95_ms":2355.827,"min_ms":1523.662,"max_ms":2355.827,"samples_ms":[2197.952,1523.662,2288.384,2355.827,1997.716]}
+2026-11-25T01:38:57.364+00:00 METRIC startup_first_icon_observed {"count":5,"median_ms":2201.098,"p95_ms":2360.932,"min_ms":1526.683,"max_ms":2360.932,"samples_ms":[2201.098,1526.683,2294.413,2360.932,2000.769]}
+2026-11-25T01:38:57.365+00:00 METRIC startup_all_icons_observed {"count":5,"median_ms":2201.1,"p95_ms":2360.935,"min_ms":1526.711,"max_ms":2360.935,"samples_ms":[2201.1,1526.711,2294.417,2360.935,2000.772]}
+2026-11-25T01:38:57.366+00:00 PASS reading startup fixture leaves the profile bytes unchanged
+2026-11-25T01:38:59.514+00:00 PASS forced termination leaves the committed profile bytes intact exit=1 sha256=57CA933542BCAD46FA7EB35F26B4DBCDD2BCE835EB51D991EF30AE7ADC4F57D0
+2026-11-25T01:39:00.948+00:00 PASS the killed process releases the profile lease and a fresh Dock recovers committed state
+2026-11-25T01:39:02.430+00:00 PASS moved target yields a useful error, retains the historical reference and preserves the file
+2026-11-25T01:39:02.463+00:00 PASS Windows read-only profile rejects a write without replacing the file or in-process state Access to the path is denied.
+2026-11-25T01:39:02.487+00:00 PASS editing rebinds the moved target without changing the fixture
+2026-11-25T01:39:02.836+00:00 PASS corrupt Dock configuration reports failure and preserves exact bytes exit=1 error=Dock 配置内容无效，原文件已保留。
+2026-11-25T01:39:04.742+00:00 PASS corrupt theme storage reports built-in fallback and preserves exact bytes
+2026-11-25T01:39:06.272+00:00 PASS one visible WPF window before one-display resident measurement
+2026-11-25T01:39:25.275+00:00 METRIC single_resident_idle {"elapsed_s":15.001,"cpu_pct_one_core":0.0,"cpu_pct_machine":0.0,"working_set_mib":168.051,"private_mib":99.984,"delta_working_set_mib":-0.047,"delta_private_mib":-0.078}
+2026-11-25T01:39:26.332+00:00 METRIC secondary_live_add_and_icon_decode_observed {"first_icon_ms":981.134,"all_icons_ms":981.136,"includes_config_edits":12}
+2026-11-25T01:39:26.337+00:00 PASS two visible WPF windows with the same fixture count before two-display resident measurement
+2026-11-25T01:39:45.339+00:00 METRIC dual_resident_idle {"elapsed_s":15.001,"cpu_pct_one_core":0.31249,"cpu_pct_machine":0.02232,"working_set_mib":211.695,"private_mib":128.562,"delta_working_set_mib":2.004,"delta_private_mib":2.226}
+2026-11-25T01:39:45.341+00:00 METRIC dual_minus_single_resident_idle {"cpu_pct_one_core":0.31249,"working_set_mib":43.644,"private_mib":28.578}
+2026-11-25T01:39:45.602+00:00 PASS six different local PNG replacements update the live icon
+2026-11-25T01:39:45.603+00:00 METRIC live_png_edit_to_bitmap_observed {"count":6,"median_ms":40.728,"p95_ms":48.978,"min_ms":35.4,"max_ms":48.978,"samples_ms":[37.559,35.4,44.453,38.824,48.978,42.632]}
+2026-11-25T01:40:05.607+00:00 SOAK sample=1 {"uptime_s":20.004,"visible_docks":2,"state_roundtrip_ms":3.449,"working_set_mib":215.098,"private_mib":130.699}
+2026-11-25T01:40:25.611+00:00 SOAK sample=2 {"uptime_s":40.008,"visible_docks":2,"state_roundtrip_ms":2.639,"working_set_mib":208.484,"private_mib":125.535}
+2026-11-25T01:40:45.615+00:00 SOAK sample=3 {"uptime_s":60.011,"visible_docks":2,"state_roundtrip_ms":2.559,"working_set_mib":213.152,"private_mib":129.426}
+2026-11-25T01:41:05.620+00:00 SOAK sample=4 {"uptime_s":80.017,"visible_docks":2,"state_roundtrip_ms":4.675,"working_set_mib":203.242,"private_mib":119.926}
+2026-11-25T01:41:25.629+00:00 SOAK sample=5 {"uptime_s":100.026,"visible_docks":2,"state_roundtrip_ms":5.745,"working_set_mib":203.141,"private_mib":119.938}
+2026-11-25T01:41:45.634+00:00 SOAK sample=6 {"uptime_s":120.03,"visible_docks":2,"state_roundtrip_ms":3.499,"working_set_mib":204.395,"private_mib":121.281}
+2026-11-25T01:42:05.649+00:00 SOAK sample=7 {"uptime_s":140.037,"visible_docks":2,"state_roundtrip_ms":12.649,"working_set_mib":204.406,"private_mib":121.293}
+2026-11-25T01:42:25.653+00:00 SOAK sample=8 {"uptime_s":160.049,"visible_docks":2,"state_roundtrip_ms":2.833,"working_set_mib":204.426,"private_mib":121.316}
+2026-11-25T01:42:45.608+00:00 SOAK sample=9 {"uptime_s":180.004,"visible_docks":2,"state_roundtrip_ms":3.913,"working_set_mib":204.449,"private_mib":121.324}
+2026-11-25T01:42:45.608+00:00 PASS requested continuous interval completed and every live-state sample responded
+2026-11-25T01:42:45.609+00:00 METRIC dual_dock_continuous {"process":{"elapsed_s":180.004,"cpu_pct_one_core":0.85936,"cpu_pct_machine":0.06138,"working_set_mib":204.449,"private_mib":121.324,"delta_working_set_mib":-1.805,"delta_private_mib":-1.719},"samples":[{"uptime_s":20.004,"visible_docks":2,"state_roundtrip_ms":3.449,"working_set_mib":215.098,"private_mib":130.699},{"uptime_s":40.008,"visible_docks":2,"state_roundtrip_ms":2.639,"working_set_mib":208.484,"private_mib":125.535},{"uptime_s":60.011,"visible_docks":2,"state_roundtrip_ms":2.559,"working_set_mib":213.152,"private_mib":129.426},{"uptime_s":80.017,"visible_docks":2,"state_roundtrip_ms":4.675,"working_set_mib":203.242,"private_mib":119.926},{"uptime_s":100.026,"visible_docks":2,"state_roundtrip_ms":5.745,"working_set_mib":203.141,"private_mib":119.938},{"uptime_s":120.03,"visible_docks":2,"state_roundtrip_ms":3.499,"working_set_mib":204.395,"private_mib":121.281},{"uptime_s":140.037,"visible_docks":2,"state_roundtrip_ms":12.649,"working_set_mib":204.406,"private_mib":121.293},{"uptime_s":160.049,"visible_docks":2,"state_roundtrip_ms":2.833,"working_set_mib":204.426,"private_mib":121.316},{"uptime_s":180.004,"visible_docks":2,"state_roundtrip_ms":3.913,"working_set_mib":204.449,"private_mib":121.324}]}
+2026-11-25T01:43:04.697+00:00 METRIC single_auto_hide_idle {"elapsed_s":15.001,"cpu_pct_one_core":0.31248,"cpu_pct_machine":0.02232,"working_set_mib":205.816,"private_mib":122.098,"delta_working_set_mib":-0.055,"delta_private_mib":-0.082}
+2026-11-25T01:43:04.705+00:00 METRIC single_auto_hide_poll_counts {"pointerSamples":403,"foregroundSamples":0,"automaticOpens":0}
+2026-11-25T01:43:04.705+00:00 PASS native timer sampled while idle outside the synthetic offscreen zone
+2026-11-25T01:43:06.957+00:00 PASS all controlled hot-zone trials remain hidden at 249 ms and reveal at 250 ms
+2026-11-25T01:43:06.958+00:00 METRIC hot_zone_250ms_input_to_visible_observed {"count":8,"median_ms":258.937,"p95_ms":264.604,"min_ms":253.828,"max_ms":264.604,"samples_ms":[263.581,258.866,258.239,264.604,259.009,253.828,261.449,255.592]}
+2026-11-25T01:43:06.958+00:00 METRIC hot_zone_threshold_request_to_visible_observed {"count":8,"median_ms":8.496,"p95_ms":12.693,"min_ms":3.471,"max_ms":12.693,"samples_ms":[10.697,8.537,8.093,12.693,8.456,3.471,10.997,5.264]}
+2026-11-25T01:43:08.289+00:00 PASS every measured theme switch updates the live WPF rendering
+2026-11-25T01:43:08.290+00:00 METRIC theme_switch_wpf_roundtrip {"count":16,"median_ms":52.929,"p95_ms":206.587,"min_ms":39.885,"max_ms":206.587,"samples_ms":[108.199,206.587,39.885,54.384,54.839,54.197,51.855,48.165,77.698,48.115,55.154,46.17,47.415,54.004,45.279,43.006]}
+2026-11-25T01:43:08.384+00:00 END passed=16 failed=0

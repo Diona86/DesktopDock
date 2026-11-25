@@ -44,6 +44,8 @@ public partial class App
             """{"type":"object","properties":{"id":{"type":"string","format":"uuid"},"open":{"type":"boolean"}},"required":["id","open"],"additionalProperties":false}"""),
         new("dock_capture", "Render the selected app window's own visual tree as a PNG.",
             """{"type":"object","properties":{"window":{"enum":["dock","settings","group","themeEditor","hotZoneMap","desktopManager"]}},"required":["window"],"additionalProperties":false}"""),
+        new("dock_p6_diagnostics", "Export the actual diagnostics report inside the isolated test profile.",
+            """{"type":"object","additionalProperties":false}"""),
         .. P2Tools(),
         .. P3Tools(),
         .. P4Tools(),
@@ -81,6 +83,10 @@ public partial class App
         DockWindow testDock = dock!;
         switch (name)
         {
+            case "dock_p6_diagnostics":
+                string reportPath = Path.Combine(diagnostics!.ProfileDirectory, $"diagnostics-test-{Guid.NewGuid():N}.json");
+                diagnostics.Export(reportPath, DiagnosticDisplays());
+                return McpReply(new { path = reportPath });
             case "dock_state":
                 return McpReply(ReadTestState());
             case "dock_add":
@@ -178,6 +184,7 @@ public partial class App
 
     private object ReadTestState() => new
     {
+        releaseVersion = DockDiagnostics.Version,
         items = session!.Items,
         groups = session.Groups,
         entries = session.Entries,
