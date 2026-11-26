@@ -65,6 +65,12 @@ english.CleanupFailed=The requested cleanup stopped. %1 Review the profile or de
 chinesesimp.CleanupFailed=清理已停止。%1 请按说明核对配置或恢复桌面图标后重试。
 english.StartupFailed=Desktop Dock was installed. Windows sign-in registration could not be updated. Review the setting in Desktop Dock.
 chinesesimp.StartupFailed=Desktop Dock 已安装。登录启动项更新失败，请在 Desktop Dock 设置中检查状态。
+english.UpdateNeedsInstall=Open the installed copy of Desktop Dock to update it in the app.
+chinesesimp.UpdateNeedsInstall=请打开通过安装包安装的 Desktop Dock，再从应用内更新。
+english.UpdateProcessBusy=Desktop Dock did not exit in time. Close it from the notification area and try again.
+chinesesimp.UpdateProcessBusy=Desktop Dock 未能及时退出。请从通知区域退出后重试。
+english.UpdateRestartFailed=Open Desktop Dock from the Start menu to continue.
+chinesesimp.UpdateRestartFailed=请从开始菜单打开 Desktop Dock 以继续使用。
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:DesktopTask}"; Flags: unchecked
@@ -87,6 +93,10 @@ const
   ShortcutRecordKey = 'Software\{#ProductKey}\Installer';
   HelperFileName = 'DesktopDock.SetupHelper.exe';
   RunValueName = 'DesktopDock.Windows';
+  SynchronizeAccess = $00100000;
+  ErrorInvalidParameter = 87;
+  WaitObject0 = 0;
+  UpdateExitWaitMs = 20000;
 #ifdef Validation
   RunKey = 'Software\DesktopDock.Windows.P6.Validation\StartupProbe';
 #else
@@ -97,6 +107,15 @@ var
   RemoveProfile: Boolean;
   PreflightPrepared: Boolean;
   PreserveExistingStartup: Boolean;
+  UpdateRestartPath: String;
+  UpdateSucceeded: Boolean;
+
+function OpenProcess(Access: Cardinal; Inherit: Boolean; ProcessId: Cardinal): THandle;
+  external 'OpenProcess@kernel32.dll stdcall setuponly';
+function WaitForSingleObject(ProcessHandle: THandle; Milliseconds: Cardinal): Cardinal;
+  external 'WaitForSingleObject@kernel32.dll stdcall setuponly';
+function CloseHandle(Handle: THandle): Boolean;
+  external 'CloseHandle@kernel32.dll stdcall setuponly';
 
 function ProfileDirectory: String;
 begin
@@ -214,14 +233,40 @@ begin
   Result := (Copy(A, 1, Length(B)) = B) or (Copy(B, 1, Length(A)) = A);
 end;
 
+function WaitForUpdateExit(ProcessId: Cardinal): Boolean;
+var
+  ProcessHandle: THandle;
+begin
+  ProcessHandle := OpenProcess(SynchronizeAccess, False, ProcessId);
+  if ProcessHandle = 0 then
+  begin
+    { The app can already be gone by the time Setup reaches this check. }
+    Result := DLLGetLastError = ErrorInvalidParameter;
+    exit;
+  end;
+  try
+    Result := WaitForSingleObject(ProcessHandle, UpdateExitWaitMs) = WaitObject0;
+  finally
+    CloseHandle(ProcessHandle);
+  end;
+end;
+
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 var
-  OldVersion, OldLocation, Detail: String;
+  OldVersion, OldLocation, Detail, UpdateId, PreviousApp: String;
   OldPacked, NewPacked: Int64;
+  UpdateProcessId: Integer;
 begin
   Result := '';
   if PreflightPrepared then
     exit;
+  UpdateId := ExpandConstant('{param:UPDATEPID|}');
+  UpdateProcessId := StrToIntDef(UpdateId, 0);
+  if (UpdateId <> '') and ((UpdateProcessId <= 0) or not WizardSilent) then
+  begin
+    Result := CustomMessage('UpdateNeedsInstall');
+    exit;
+  end;
   if DirectoryOverlap(AppRoot, ProfileDirectory) or DirectoryOverlap(AppRoot, BackupDirectory) then
   begin
     Result := CustomMessage('BadDestination');
@@ -238,11 +283,33 @@ begin
     end;
     if not RegQueryStringValue(HKCU, AppUninstallKey, 'DisplayVersion', OldVersion) or
       not StrToVersion(OldVersion, OldPacked) or not StrToVersion('{#ReleaseVersion}', NewPacked) or
-      (ComparePackedVersion(OldPacked, NewPacked) > 0) then
+      (ComparePackedVersion(OldPacked, NewPacked) > 0) or
+      ((UpdateProcessId > 0) and (ComparePackedVersion(OldPacked, NewPacked) = 0)) then
     begin
       Result := FmtMessage(CustomMessage('BadVersion'), [OldVersion, '{#ReleaseVersion}']);
       exit;
     end;
+    if UpdateProcessId > 0 then
+    begin
+      PreviousApp := VersionExecutable(AppRoot, OldVersion);
+      if not FileExists(PreviousApp) then
+      begin
+        Result := CustomMessage('UpdateNeedsInstall');
+        exit;
+      end;
+      Log('Waiting for Desktop Dock to exit before updating.');
+      if not WaitForUpdateExit(Cardinal(UpdateProcessId)) then
+      begin
+        Result := CustomMessage('UpdateProcessBusy');
+        exit;
+      end;
+      UpdateRestartPath := PreviousApp;
+    end;
+  end
+  else if UpdateProcessId > 0 then
+  begin
+    Result := CustomMessage('UpdateNeedsInstall');
+    exit;
   end
   else if not EmptyDirectory(AppRoot) then
   begin
@@ -326,6 +393,8 @@ procedure CurStepChanged(CurStep: TSetupStep);
 var
   ExitCode: Integer;
 begin
+  if CurStep = ssDone then
+    UpdateSucceeded := True;
   if CurStep <> ssPostInstall then
     exit;
   InstallDesktopShortcut;
@@ -338,10 +407,27 @@ begin
     SW_HIDE, ewWaitUntilTerminated, ExitCode) or (ExitCode <> 0) then
   begin
     Log('Desktop Dock login startup registration failed.');
-    if not WizardSilent then
+    if not WizardSilent or (UpdateRestartPath <> '') then
       SuppressibleMsgBox(CustomMessage('StartupFailed'), mbInformation, MB_OK, IDOK);
   end;
 #endif
+end;
+
+procedure DeinitializeSetup;
+var
+  Executable: String;
+  ErrorCode: Integer;
+begin
+  if UpdateRestartPath = '' then
+    exit;
+  Executable := UpdateRestartPath;
+  if UpdateSucceeded then
+    Executable := InstalledExecutable;
+  if not Exec(Executable, SettingsArguments(''), ExtractFileDir(Executable), SW_SHOWNORMAL, ewNoWait, ErrorCode) then
+  begin
+    Log('Desktop Dock restart failed with error ' + IntToStr(ErrorCode) + '.');
+    SuppressibleMsgBox(CustomMessage('UpdateRestartFailed'), mbInformation, MB_OK, IDOK);
+  end;
 end;
 
 function InitializeUninstall: Boolean;

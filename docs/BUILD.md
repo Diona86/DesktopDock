@@ -7,7 +7,7 @@ Inno Setup 上游要求商业用户购买许可。使用时请参照随编译器
 在仓库根目录执行。`$version` 应与应用项目文件中的 `Version` 一致。
 
 ```powershell
-$version = '1.3.0'
+$version = '1.4.0'
 $output = ".\artifacts\releases\$version"
 dotnet restore .\src\DesktopDock\DesktopDock.csproj -r win-x64
 dotnet build .\DesktopDock.slnx -c Release
@@ -25,6 +25,6 @@ tar.exe -a -cf "$output\DesktopDock-$version-win-x64-portable.zip" -C $output De
 Get-ChildItem -LiteralPath $output -File | Where-Object Extension -in '.exe','.zip' | Get-FileHash -Algorithm SHA256
 ```
 
-在 `Diona86/DesktopDock` 发布 GitHub Release 时，使用 `v<版本>` 标签，将 `DesktopDock-<版本>-win-x64-setup.exe` 上传为发行附件，并将它作为稳定版发布。设置页只检查 GitHub 标为最新的公开发行。 [GitHub 发行 API](https://docs.github.com/en/rest/releases/releases#get-the-latest-release)
+在 `Diona86/DesktopDock` 发布 GitHub Release 时，使用 `v<版本>` 标签，将 `DesktopDock-<版本>-win-x64-setup.exe` 上传为发行附件，并将它作为稳定版发布。设置页检查 GitHub 标为最新的公开发行，并用 GitHub 提供的附件大小和 SHA-256 校验安装包。 [GitHub 发行 API](https://docs.github.com/en/rest/releases/releases#get-the-latest-release)
 
 复测命令、覆盖和现场验证项见 [发布验收](PHASE_6_ACCEPTANCE.md)。发布目录的 `SHA256SUMS.txt` 用于核对交付文件，`THIRD-PARTY-NOTICES.txt` 汇集实际使用的 .NET 10.0.15 运行时包及 Inno Setup 7.1.1 的许可与声明。

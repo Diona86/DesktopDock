@@ -74,7 +74,7 @@ public partial class App : Application
 
     private (string Directory, bool ShowSettings) ReadOptions(string[] args)
     {
-        string defaultDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DesktopDock", "config");
+        string defaultDirectory = DockInstalledUpdate.DefaultProfileDirectory;
         string directory = defaultDirectory;
         bool settings = false;
         for (int index = 0; index < args.Length; index++)
@@ -171,6 +171,12 @@ public partial class App : Application
                 () => legacyDock.Profile.Options.GlobalPositionLocked, SetGlobalPositionLock,
                 () => legacyDock.Profile.Options.Behavior.Hotkeys);
             settings.SetDiagnosticExporter(ExportDiagnostics);
+            if (!validationMode && diagnostics?.ProfileDirectory is string profileDirectory && DockInstalledUpdate.Find(profileDirectory) != null)
+                settings.ConfigureUpdateInstaller((file, version) =>
+                {
+                    DockInstalledUpdate.Start(profileDirectory, file, version);
+                    _ = Dispatcher.InvokeAsync(() => ExitApp(0));
+                });
             UpdateDisplayChoices();
             settings.Show();
         }

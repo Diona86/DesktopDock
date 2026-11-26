@@ -151,8 +151,12 @@
                     <TextBlock x:Name="InstalledVersionText" Style="{StaticResource FieldHint}" Margin="0,5,0,8" />
                     <WrapPanel>
                         <Button x:Name="CheckForUpdatesButton" Content="检查更新" Click="CheckForUpdates" Margin="0,0,8,6" />
+                        <Button x:Name="InstallUpdateButton" Style="{StaticResource PrimaryButton}" Content="一键更新"
+                                Click="InstallUpdate" Visibility="Collapsed" Margin="0,0,8,6" />
                         <Button x:Name="OpenReleaseButton" Content="打开 GitHub Releases" Click="OpenRelease" Margin="0,0,0,6" />
                     </WrapPanel>
+                    <ProgressBar x:Name="UpdateProgress" Height="5" Minimum="0" Maximum="100" Visibility="Collapsed"
+                                 Margin="0,0,0,7" AutomationProperties.Name="更新下载进度" />
                     <TextBlock x:Name="UpdateStatusText" Style="{StaticResource FieldHint}" TextWrapping="Wrap"
                                AutomationProperties.LiveSetting="Polite" />
                     <StackPanel x:Name="DesktopSystemControls" Visibility="Collapsed" Margin="0,22,0,0">

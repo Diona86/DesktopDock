@@ -20,9 +20,9 @@
 
 ## 软件更新
 
-从 1.1.0 起，通过托盘打开「设置 → 通用设置 → 软件更新」，点击「检查更新」。发现较新稳定版后，选择「查看发行说明和下载」，在浏览器下载 Windows x64 安装包。退出托盘中的 Desktop Dock，再运行安装包。安装器会在升级前检查并备份现有配置。 [GitHub Releases](https://github.com/Diona86/DesktopDock/releases) · [安装和配置恢复](INSTALLATION.md)
+通过托盘打开「设置 → 通用设置 → 软件更新」，点击「检查更新」。从 1.4.0 起，使用默认配置目录的 Windows 安装版可在发现新版后点击「一键更新」。下载期间可取消。校验通过后，Desktop Dock 会退出，安装器会检查并备份现有配置、升级原安装目录，成功后重新打开设置。
 
-1.0.0 用户需先手动运行 1.1.0 或更新的安装包，才能在设置中看到这个入口。
+旧版需要先手动安装 1.4.0 才能使用此按钮。便携版或使用自定义配置目录的副本，可通过发行页下载。已下载的更新使用 GitHub 发行中的 SHA-256 校验。 [GitHub Releases](https://github.com/Diona86/DesktopDock/releases) · [安装和配置恢复](INSTALLATION.md)
 
 ## 常见问题
 

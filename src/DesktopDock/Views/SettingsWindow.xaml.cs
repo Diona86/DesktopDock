@@ -39,6 +39,7 @@ public partial class SettingsWindow : Window
         {
             session.Changed -= SessionChanged;
             updateCheck?.Cancel();
+            updateDownload?.Cancel();
         };
         Navigation.SelectedIndex = 1;
     }
