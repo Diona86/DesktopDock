@@ -25,11 +25,19 @@
         </Grid.RowDefinitions>
         <Border BorderBrush="{StaticResource Rule}" BorderThickness="0,0,0,1" Padding="22,17,22,17">
             <DockPanel LastChildFill="True">
-                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                <WrapPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                    <Button Content="社区主题" Click="OpenDiscussionsClick" Margin="0,0,7,0"
+                            ToolTip="在浏览器中打开 GitHub Discussions 主题分享区" />
+                    <Button x:Name="ImportClipboardButton" Content="粘贴导入" Click="ImportClipboardClick" Margin="0,0,7,0"
+                            AutomationProperties.AutomationId="ImportThemeClipboard"
+                            ToolTip="从剪贴板导入主题 JSON 或 GitHub 代码块" />
+                    <Button x:Name="CopyShareButton" Content="复制分享" Click="CopyThemeClick" Margin="0,0,7,0"
+                            AutomationProperties.AutomationId="CopyThemeShare"
+                            ToolTip="复制当前主题 JSON 到剪贴板，便于在 GitHub 分享" />
                     <Button Content="导入主题" Click="ImportThemeClick" Margin="0,0,7,0" />
                     <Button Content="导出主题" Click="ExportThemeClick" />
-                </StackPanel>
-                <TextBlock Text="主题编辑器" FontSize="27" FontWeight="SemiBold" Foreground="{StaticResource Ink}" />
+                </WrapPanel>
+                <TextBlock Text="主题编辑器" FontSize="27" FontWeight="SemiBold" Foreground="{StaticResource Ink}" VerticalAlignment="Center" />
             </DockPanel>
         </Border>
         <Grid Grid.Row="1">

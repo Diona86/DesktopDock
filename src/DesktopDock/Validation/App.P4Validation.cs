@@ -7,7 +7,7 @@ public partial class App
     private static DockMcpTool[] P4Tools() =>
     [
         new("dock_p4_theme", "Open the real theme editor, exercise its commands, and inspect the applied Dock visuals.",
-            """{"type":"object","properties":{"action":{"enum":["open","state","category","scope","theme","set","override","undo","reset","save","saveAs","import","export","cancel","performance","animations"]},"id":{"type":["string","null"]},"name":{"type":"string"},"scope":{"enum":["Global","Current"]},"key":{"type":"string"},"value":{},"path":{"type":"string"},"enabled":{"type":"boolean"}},"required":["action"],"additionalProperties":false}""")
+            """{"type":"object","properties":{"action":{"enum":["open","state","category","scope","theme","set","override","undo","reset","save","saveAs","import","export","importText","exportText","cancel","performance","animations"]},"id":{"type":["string","null"]},"name":{"type":"string"},"scope":{"enum":["Global","Current"]},"key":{"type":"string"},"value":{},"path":{"type":"string"},"text":{"type":"string"},"enabled":{"type":"boolean"}},"required":["action"],"additionalProperties":false}""")
     ];
 
     private object InvokeP4Mcp(string name, JsonElement args)

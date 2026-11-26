@@ -43,14 +43,14 @@ def capture(client, checks, window, path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def expect_rejected(client, checks, path, store):
+def expect_rejected(client, checks, label, store, action, **arguments):
     before = contents(store)
     before_selection = editor(client)["editor"]
-    failure = client.call("dock_p4_theme", {"action": "import", "path": str(path)}, expect_error=True)
+    failure = client.call("dock_p4_theme", {"action": action, **arguments}, expect_error=True)
     detail = failure["content"][0]["text"]
     after = editor(client)
     checks.check(bool(detail) and contents(store) == before and after["editor"] == before_selection,
-                 f"reject {path.name} without changing saved themes or active draft", detail)
+                 f"reject {label} without changing saved themes or active draft", detail)
 
 
 def test_files(client, checks, package, profile, directory):
@@ -83,7 +83,7 @@ def test_files(client, checks, package, profile, directory):
         emit("executable-field", unknown_code), emit("out-of-range", out_of_range),
         emit("external-path", external_color), duplicate, oversized, package,
     ):
-        expect_rejected(client, checks, path, profile / "themes.json")
+        expect_rejected(client, checks, path.name, profile / "themes.json", "import", path=str(path))
     return exported["theme"]
 
 
@@ -281,6 +281,26 @@ def exercise(executable, directory, checks):
         imported_theme = next(theme for theme in saved["themes"] if theme["id"] == original["id"])
         checks.check(imported_theme == original and saved["globalThemeId"] == original["id"],
                      "successful import and apply round-trip all supplied resources and tokens")
+
+    text_profile = directory / "text-import-target"
+    text_profile.mkdir()
+    text_store = text_profile / "themes.json"
+    package_text = package.read_text(encoding="utf-8-sig")
+    with p2.DockClient(executable, text_profile) as client:
+        editor(client, "open")
+        duplicate_field = '{"schemaVersion":1,' + package_text[1:]
+        expect_rejected(client, checks, "repeated JSON field in theme text", text_store, "importText", text=duplicate_field)
+        imported = editor(client, "importText", text=f"```json\r\n{package_text}\r\n```")
+        checks.check(imported["editor"]["selectedId"] == original["id"]
+                     and imported["editor"]["effective"] == original["tokens"]
+                     and imported["saved"]["globalThemeId"] == "minimal" and contents(text_store) is None,
+                     "a GitHub JSON code block previews a theme without saving")
+        saved = editor(client, "save")["saved"]
+        exported_text = editor(client, "exportText")["editor"]["exportedText"]
+        checks.check(saved["globalThemeId"] == original["id"] and contents(text_store) is not None
+                     and isinstance(exported_text, str) and json.loads(exported_text) == json.loads(package_text),
+                     "saving and exporting an imported text theme preserves the complete package")
+        expect_rejected(client, checks, "repeated ID in theme text", text_store, "importText", text=exported_text)
 
     corrupt_profile = directory / "corrupt-theme-profile"
     corrupt_profile.mkdir()

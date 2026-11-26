@@ -1,0 +1,38 @@
+title: "[主题分享] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        欢迎分享你的 **Desktop Dock** 自定义主题！
+        在主题编辑器点击 **「复制分享」** 即可将 `.docktheme` 配置复制到剪贴板，然后粘贴到下方。
+  - type: input
+    id: theme_name
+    attributes:
+      label: 主题名称
+      description: 简短描述你的主题风格（例如：深色磨砂、极简暖白）
+      placeholder: 例如：Nordic Frost
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: 效果截图与说明
+      description: 请将桌面截图直接拖入下方编辑框上传，并可附带适用壁纸风格或调整建议
+      placeholder: 拖入截图，或写一句适用说明…
+    validations:
+      required: false
+  - type: textarea
+    id: theme_json
+    attributes:
+      label: 主题配置（.docktheme）
+      description: 在主题编辑器点击「复制分享」后，把原始 JSON 直接粘贴到下方
+      render: json
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: 分享确认
+      options:
+        - label: 该配置由 Desktop Dock 主题编辑器导出，不包含任何个人路径或脚本
+          required: true

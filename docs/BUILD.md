@@ -7,7 +7,7 @@ Inno Setup 上游要求商业用户购买许可。使用时请参照随编译器
 在仓库根目录执行。`$version` 应与应用项目文件中的 `Version` 一致。
 
 ```powershell
-$version = '1.4.0'
+$version = '1.4.1'
 $output = ".\artifacts\releases\$version"
 dotnet restore .\src\DesktopDock\DesktopDock.csproj -r win-x64
 dotnet build .\DesktopDock.slnx -c Release

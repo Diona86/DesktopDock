@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Windows;
@@ -246,9 +248,12 @@ public partial class DockThemeEditorWindow : Window
         preview(PreviewState());
     }
 
-    private void Import(string path)
+    private void Import(string path) => ApplyImportedTheme(DockThemePackage.Read(path));
+
+    private void ImportText(string text) => ApplyImportedTheme(DockThemePackage.Parse(text));
+
+    private void ApplyImportedTheme(DockTheme theme)
     {
-        DockTheme theme = DockThemePackage.Read(path);
         DockThemeState next = draft.State.AddTheme(theme);
         ApplyDraft(isCurrent
             ? draft with { State = next.SetOverride(dockId, LocalOverride with { ThemeId = theme.Id }) }
@@ -258,12 +263,19 @@ public partial class DockThemeEditorWindow : Window
 
     private void Export(string path)
     {
+        DockThemePackage.Write(path, PrepareExportTheme());
+        SetFeedback("已导出当前主题参数");
+    }
+
+    private string ExportText() => DockThemePackage.Serialize(PrepareExportTheme());
+
+    private DockTheme PrepareExportTheme()
+    {
         DockTheme theme = SelectedTheme;
         DockThemeTokens tokens = EditingTokens;
         if (IsBuiltIn(theme.Id) || tokens != theme.Tokens)
             theme = theme with { Id = Guid.NewGuid().ToString("N"), Tokens = tokens };
-        DockThemePackage.Write(path, theme);
-        SetFeedback("已导出当前主题参数");
+        return theme;
     }
 
     private void ChangeToken(string key, object value, bool rebuild = true)
@@ -552,7 +564,7 @@ public partial class DockThemeEditorWindow : Window
     {
         var picker = new OpenFileDialog { Title = "导入 Dock 主题", Filter = "Dock 主题 (*.docktheme)|*.docktheme", CheckFileExists = true };
         if (picker.ShowDialog(this) == true)
-            Guard(() => Import(picker.FileName));
+            Guard(() => ImportInteractive(() => DockThemePackage.Read(picker.FileName)));
     }
 
     private void ExportThemeClick(object sender, RoutedEventArgs e)
@@ -561,6 +573,80 @@ public partial class DockThemeEditorWindow : Window
             DefaultExt = ".docktheme", AddExtension = true, FileName = SelectedTheme.Name };
         if (picker.ShowDialog(this) == true)
             Guard(() => Export(picker.FileName));
+    }
+
+    private void ImportClipboardClick(object sender, RoutedEventArgs e)
+    {
+        Guard(() =>
+        {
+            string text;
+            try
+            {
+                if (!Clipboard.ContainsText())
+                    throw new InvalidDataException("剪贴板中没有主题文本。");
+                text = Clipboard.GetText();
+            }
+            catch (ExternalException)
+            {
+                SetFeedback("无法访问系统剪贴板，请稍后重试。", isError: true);
+                return;
+            }
+            ImportInteractive(() => DockThemePackage.Parse(text));
+        });
+    }
+
+    private void CopyThemeClick(object sender, RoutedEventArgs e)
+    {
+        Guard(() =>
+        {
+            string text = ExportText();
+            try
+            {
+                Clipboard.SetText(text);
+            }
+            catch (ExternalException)
+            {
+                SetFeedback("无法访问系统剪贴板，请稍后重试。", isError: true);
+                return;
+            }
+            SetFeedback("已复制当前主题分享文本到剪贴板");
+        });
+    }
+
+    private void OpenDiscussionsClick(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            using Process? browser = Process.Start(new ProcessStartInfo(DockUpdateService.DiscussionsPage.AbsoluteUri)
+            {
+                UseShellExecute = true
+            });
+        }
+        catch (Exception error) when (DockDialogs.IsUserFacing(error))
+        {
+            SetFeedback("无法打开默认浏览器，请检查 Windows 的默认浏览器设置。", isError: true);
+        }
+    }
+
+    private void ImportInteractive(Func<DockTheme> read)
+    {
+        DockTheme theme = read();
+        if (draft.State.Themes.Any(existing => existing.Id == theme.Id))
+        {
+            MessageBoxResult choice = MessageBox.Show(
+                this,
+                $"主题列表中已存在标识为「{theme.Id}」的主题。\n是否作为新副本导入「{theme.Name}」？",
+                "导入主题",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+            if (choice != MessageBoxResult.Yes)
+            {
+                SetFeedback("已取消导入");
+                return;
+            }
+            theme = theme with { Id = Guid.NewGuid().ToString("N") };
+        }
+        ApplyImportedTheme(theme);
     }
 
     private void Guard(Action action)
@@ -579,6 +665,7 @@ public partial class DockThemeEditorWindow : Window
     {
         T Arg<T>(string key) => args.TryGetProperty(key, out JsonElement element) && element.Deserialize<T>(InputJson) is T value
             ? value : throw new ArgumentException($"Missing or invalid '{key}'.");
+        string? exportedText = null;
         switch (action)
         {
             case "state": break;
@@ -609,6 +696,8 @@ public partial class DockThemeEditorWindow : Window
             case "saveAs": Save(Arg<string>("name")); break;
             case "export": Export(Arg<string>("path")); break;
             case "import": Import(Arg<string>("path")); break;
+            case "exportText": exportedText = ExportText(); break;
+            case "importText": ImportText(Arg<string>("text")); break;
             case "performance": SetPerformance(Arg<bool>("enabled")); break;
             case "animations": SetAnimations(Arg<bool>("enabled")); break;
             case "cancel": Close(); break;
@@ -630,6 +719,7 @@ public partial class DockThemeEditorWindow : Window
             draft.State.PerformanceMode,
             draft.State.AnimationsEnabled,
             feedback = Feedback.Text,
+            exportedText,
             themes = draft.State.Themes.Select(theme => new { theme.Id, theme.Name })
         };
     }

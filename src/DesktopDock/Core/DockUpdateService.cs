@@ -35,6 +35,7 @@ internal sealed class DockUpdateService(HttpClient httpClient)
     private const long MaxPackageBytes = 512L * 1024 * 1024;
 
     internal static Uri ReleasesPage { get; } = new("https://github.com/Diona86/DesktopDock/releases");
+    internal static Uri DiscussionsPage { get; } = new("https://github.com/Diona86/DesktopDock/discussions");
 
     internal static DockUpdateService Shared { get; } = new(new HttpClient(new HttpClientHandler
     {
