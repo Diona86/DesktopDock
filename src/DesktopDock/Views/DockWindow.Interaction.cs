@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Controls.Primitives;
+using System.Windows.Threading;
 
 namespace DesktopDock;
 
@@ -13,6 +14,7 @@ public partial class DockWindow
     private DockWindowPosition.RevealAnchor? revealAnchor;
     private Rect lastMenuBounds = Rect.Empty;
     private long lastMenuClosedAt = long.MinValue;
+    private bool desktopNewMenuOpen;
 
     internal Func<bool>? EscapeRequested { get; set; }
 
@@ -44,7 +46,7 @@ public partial class DockWindow
     {
         if (!IsVisible || !allowPointerInput)
             return false;
-        if (moveStart.HasValue || draggingItem.HasValue || IsGridResizing)
+        if (desktopNewMenuOpen || moveStart.HasValue || draggingItem.HasValue || IsGridResizing)
             return true;
         DockWindowPosition.TryGetBounds(this, out Rect dockBounds);
         var point = new Point(x, y);
@@ -78,6 +80,8 @@ public partial class DockWindow
 
     internal bool CloseTopInteraction()
     {
+        if (desktopNewMenuOpen && DesktopShellNewMenu.EndMenu())
+            return true;
         while (openMenus.Count > 0)
         {
             ContextMenu menu = openMenus[^1];
@@ -118,9 +122,50 @@ public partial class DockWindow
 
     internal void CloseInteractionMenus()
     {
+        if (desktopNewMenuOpen)
+            DesktopShellNewMenu.EndMenu();
         foreach (ContextMenu menu in openMenus.ToArray())
             menu.IsOpen = false;
         openMenus.Clear();
+    }
+
+    private void OpenDesktopNewMenu()
+    {
+        Point anchor = DockWindowPosition.TryGetPointer(out Point pointer) ? pointer : Surface.PointToScreen(new Point());
+        Surface.ContextMenu.IsOpen = false;
+        _ = Dispatcher.InvokeAsync(() => TryAction(() => ShowDesktopNewMenu(anchor)), DispatcherPriority.Input);
+    }
+
+    private void ShowDesktopNewMenu(Point anchor)
+    {
+        if (!IsVisible || desktopNewMenuOpen || PresentationSource.FromVisual(this) is not HwndSource source)
+            return;
+
+        desktopNewMenuOpen = true;
+        try
+        {
+            string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+            using var menu = new DesktopShellNewMenu(desktop, source.Handle);
+            nint Forward(nint hwnd, int message, nint wParam, nint lParam, ref bool handled)
+            {
+                handled = menu.TryForwardMessage(message, wParam, lParam, out nint result);
+                return result;
+            }
+
+            source.AddHook(Forward);
+            try
+            {
+                menu.Show((int)anchor.X, (int)anchor.Y);
+            }
+            finally
+            {
+                source.RemoveHook(Forward);
+            }
+        }
+        finally
+        {
+            desktopNewMenuOpen = false;
+        }
     }
 
     private ContextMenu TrackInteractionMenu(ContextMenu menu)

@@ -152,7 +152,7 @@ internal sealed class DockGroupPanel : Window
         scroll.Content = null;
 
         double icon = options.IconSize;
-        double side = icon + 8;
+        double side = icon + 8 + DockWindow.EntryLabelSpace(options.IconNameDisplay);
         double gap = options.Layout.IconSpacing;
         int limit = options.Layout.MaxVisibleIcons == 0 ? entries.Count : Math.Min(options.Layout.MaxVisibleIcons, entries.Count);
         int columns = Math.Clamp(options.Layout.GridTracks, 1, Math.Max(1, limit));

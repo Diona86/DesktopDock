@@ -52,6 +52,10 @@ public partial class DockWindow : Window
 
         InitializeGridResize();
         Surface.ContextMenu = TrackInteractionMenu(new ContextMenu());
+        MenuItem desktopNew = CreateMenuItem("新建", OpenDesktopNewMenu);
+        desktopNew.ToolTip = "在 Windows 桌面上新建文件或文件夹";
+        Surface.ContextMenu.Items.Add(desktopNew);
+        Surface.ContextMenu.Items.Add(new Separator());
         Surface.ContextMenu.Items.Add(CreateMenuItem("创建分组", () => RunGroupDialog(() => DockGroupDialogs.Create(this, session, null))));
         Surface.ContextMenu.Items.Add(CreateMenuItem("打开设置", showSettings));
         Surface.ContextMenu.Items.Add(CreateMenuItem("隐藏 Dock", requestHide));
@@ -157,17 +161,19 @@ public partial class DockWindow : Window
         double cross = (vertical ? work.Width : work.Height) - ThemeShadowInset * 2;
         double main = (vertical ? work.Height : work.Width) - ThemeShadowInset * 2;
         double iconSize = ThemedIconSize;
+        double labelSpace = iconCount == 0 ? 0 : EntryLabelSpace(options.IconNameDisplay);
+        double entrySide = iconSize + 8 + labelSpace;
         double border = Surface.BorderThickness.Left;
         double themePadding = ThemeTokens?.Padding ?? -1;
         double themedChrome = 2 * ((themePadding >= 0 ? themePadding : 5) + border);
-        double preferredThickness = layoutTracks == 1 && (ThemeTokens?.IconSize ?? 0) == 0 && themePadding < 0
+        double preferredThickness = labelSpace == 0 && layoutTracks == 1 && (ThemeTokens?.IconSize ?? 0) == 0 && themePadding < 0
             ? options.DockThickness
-            : Math.Max(options.DockThickness, layoutTracks * (iconSize + 8 + (layoutTracks == 1 ? 0 : layout.IconSpacing)) + themedChrome);
+            : Math.Max(options.DockThickness, layoutTracks * (entrySide + (layoutTracks == 1 ? 0 : layout.IconSpacing)) + themedChrome);
         double thickness = Math.Min(preferredThickness, Math.Max(1, cross - EdgeGap * 2));
         double padding = themePadding < 0 ? Math.Clamp((thickness - iconSize - 4) / 2, 0, 5) : themePadding;
         double crossSpacing = layoutTracks > 1 ? layout.IconSpacing : 0;
-        double side = Math.Min(iconSize + 8, Math.Max(1, (thickness - (padding + border) * 2) / layoutTracks - crossSpacing));
-        double icon = Math.Min(iconSize, Math.Max(1, side - 2));
+        double side = Math.Min(entrySide, Math.Max(1, (thickness - (padding + border) * 2) / layoutTracks - crossSpacing));
+        double icon = Math.Min(iconSize, Math.Max(1, side - 2 - labelSpace));
         double emptyItemLength = vertical ? Math.Max(34, side) : 92;
         double chrome = (padding + border) * 2 + GripLength;
         int mainCells = (int)Math.Ceiling(Math.Max(1, iconCount) / (double)layoutTracks);

@@ -288,7 +288,14 @@ public partial class DockWindow
                 opacity = panel.AnimatedOpacity,
                 nativeVisible = DockWindowPosition.IsNativeVisible(panel),
                 activatesOnShow = panel.ShowActivated,
-                entries = panel.EntryButtons.Select(button => new { id = button.Tag, bounds = DescribeBounds(panel.ButtonBounds(button)) }).ToArray()
+                entries = panel.EntryButtons.Select(button => new
+                {
+                    id = button.Tag,
+                    bounds = DescribeBounds(panel.ButtonBounds(button)),
+                    label = EntryLabel(button)?.Text,
+                    labelBelowIcon = LabelBelowIcon(button, EntryImage(button), EntryLabel(button)),
+                    tooltip = (button.ToolTip as ToolTip)?.Content as string
+                }).ToArray()
             };
         }).ToArray()
     };

@@ -30,7 +30,7 @@ public partial class DockWindow
     private bool HasTileGrid => TileGrid != null;
     private int TileRows => TileGrid!.Rows;
     private int TileColumns => TileGrid!.Columns;
-    private double GridCell => ThemedIconSize + 8 + ThemedIconSpacing;
+    private double GridCell => ThemedIconSize + 8 + ThemedIconSpacing + EntryLabelSpace(session.Options.IconNameDisplay);
 
     private void InitializeGridResize()
     {

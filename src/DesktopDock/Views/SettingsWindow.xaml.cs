@@ -88,6 +88,7 @@ public partial class SettingsWindow : Window
         {
             case 0:
                 IconSizeInput.Text = options.IconSize.ToString(CultureInfo.CurrentCulture);
+                IconNameDisplayInput.SelectedIndex = (int)options.IconNameDisplay;
                 DockThicknessInput.Text = options.DockThickness.ToString(CultureInfo.CurrentCulture);
                 DockLengthInput.Text = options.DockLength.ToString(CultureInfo.CurrentCulture);
                 break;
@@ -129,6 +130,7 @@ public partial class SettingsWindow : Window
                 0 => options with
                 {
                     IconSize = ReadSize(IconSizeInput, "图标尺寸"),
+                    IconNameDisplay = (DockIconNameDisplay)IconNameDisplayInput.SelectedIndex,
                     DockThickness = ReadSize(DockThicknessInput, "Dock 厚度"),
                     DockLength = ReadSize(DockLengthInput, "Dock 长度")
                 },

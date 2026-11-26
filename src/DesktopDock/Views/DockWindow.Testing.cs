@@ -35,13 +35,16 @@ public partial class DockWindow
             items = RenderedItemButtons().Select(button =>
             {
                 var tooltip = button.ToolTip as ToolTip;
-                var image = button.Content as Image;
+                Image? image = EntryImage(button);
+                TextBlock? label = EntryLabel(button);
                 var bitmap = image?.Source as BitmapSource;
                 return new
                 {
                     id = button.Tag,
                     name = AutomationProperties.GetName(button),
                     automationId = AutomationProperties.GetAutomationId(button),
+                    label = label?.Text,
+                    labelBelowIcon = LabelBelowIcon(button, image, label),
                     tooltip = tooltip?.Content as string,
                     tooltipInitialDelay = ToolTipService.GetInitialShowDelay(button),
                     tooltipOpen = tooltip?.IsOpen == true,
@@ -53,6 +56,10 @@ public partial class DockWindow
             }).ToArray()
         };
     }
+
+    private static bool LabelBelowIcon(Button button, Image? image, TextBlock? label) =>
+        image is { IsVisible: true } && label is { IsVisible: true, ActualHeight: > 0 } &&
+        label.TranslatePoint(new Point(), button).Y >= image.TranslatePoint(new Point(0, image.ActualHeight), button).Y;
 
     internal object TestDragItem(Guid sourceId, Guid targetId, bool after)
     {

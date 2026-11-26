@@ -11,7 +11,12 @@ namespace DesktopDock;
 
 public partial class DockWindow
 {
+    private const double IconCaptionHeight = 15;
+    private const double IconCaptionGap = 2;
     internal Action<bool>? ModalInteractionRequested { get; set; }
+
+    internal static double EntryLabelSpace(DockIconNameDisplay display) =>
+        display == DockIconNameDisplay.Below ? IconCaptionHeight + IconCaptionGap : 0;
 
     private Button CreateEntryButton(Guid id, double icon, double side, double scale, CancellationToken cancellationToken = default)
     {
@@ -24,28 +29,53 @@ public partial class DockWindow
             Style = buttonStyle,
             Width = side,
             Height = side,
-            Content = image,
             ContextMenu = group == null ? CreateItemMenu(item!) : CreateGroupMenu(group),
             Tag = id
         };
-        button.ToolTip = new ToolTip
+        if (session.Options.IconNameDisplay == DockIconNameDisplay.Below)
         {
-            Content = name,
-            PlacementTarget = button,
-            Placement = session.Options.Placement switch
+            var label = new TextBlock
             {
-                DockPlacement.Top => PlacementMode.Bottom,
-                DockPlacement.Left => PlacementMode.Right,
-                DockPlacement.Right => PlacementMode.Left,
-                _ => PlacementMode.Top
-            }
-        };
-        ApplyEntryTooltip(button);
+                Text = name,
+                FontSize = 11,
+                Height = IconCaptionHeight,
+                Margin = new Thickness(2, IconCaptionGap, 2, 0),
+                TextAlignment = TextAlignment.Center,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                IsHitTestVisible = false
+            };
+            var content = new StackPanel { IsHitTestVisible = false };
+            content.Children.Add(image);
+            content.Children.Add(label);
+            button.HorizontalContentAlignment = HorizontalAlignment.Stretch;
+            button.Content = content;
+        }
+        else
+        {
+            button.Content = image;
+        }
+
+        if (session.Options.IconNameDisplay == DockIconNameDisplay.Hover)
+        {
+            button.ToolTip = new ToolTip
+            {
+                Content = name,
+                PlacementTarget = button,
+                Placement = session.Options.Placement switch
+                {
+                    DockPlacement.Top => PlacementMode.Bottom,
+                    DockPlacement.Left => PlacementMode.Right,
+                    DockPlacement.Right => PlacementMode.Left,
+                    _ => PlacementMode.Top
+                }
+            };
+            ApplyEntryTooltip(button);
+            ToolTipService.SetInitialShowDelay(button, 400);
+            ToolTipService.SetBetweenShowDelay(button, 100);
+        }
         ApplyHoverMotion(button, image);
         AutomationProperties.SetAutomationId(button, group == null ? $"DockItem_{id:N}" : $"DockGroup_{id:N}");
         AutomationProperties.SetName(button, name);
-        ToolTipService.SetInitialShowDelay(button, 400);
-        ToolTipService.SetBetweenShowDelay(button, 100);
         button.Click += (_, _) => TryAction(() =>
         {
             if (group == null)
@@ -67,6 +97,12 @@ public partial class DockWindow
         _ = LoadIconAsync(item, group, image, (int)Math.Ceiling(icon * scale), cancellationToken);
         return button;
     }
+
+    private static Image? EntryImage(Button button) => button.Content as Image ??
+        (button.Content as StackPanel)?.Children.OfType<Image>().FirstOrDefault();
+
+    private static TextBlock? EntryLabel(Button button) =>
+        (button.Content as StackPanel)?.Children.OfType<TextBlock>().FirstOrDefault();
 
     private ContextMenu CreateGroupMenu(DockGroup group)
     {

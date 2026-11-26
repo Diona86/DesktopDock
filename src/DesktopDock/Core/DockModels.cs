@@ -18,6 +18,13 @@ public enum DockItemKind
     Url
 }
 
+public enum DockIconNameDisplay
+{
+    Hover,
+    Below,
+    Hidden
+}
+
 public sealed record DockItem(Guid Id, string Name, DockItemKind Kind, string Target, string? CustomIconPath = null);
 
 public sealed record DockOptions
@@ -36,6 +43,7 @@ public sealed record DockOptions
     public string? FloatingMonitorId { get; init; }
     public bool FloatingVertical { get; init; }
     public double IconSize { get; init; } = 40;
+    public DockIconNameDisplay IconNameDisplay { get; init; } = DockIconNameDisplay.Hover;
     public double DockThickness { get; init; } = 64;
     public double DockLength { get; init; }
     public bool GlobalPositionLocked { get; init; }
@@ -50,6 +58,8 @@ public sealed record DockOptions
             throw new ArgumentException("请选择有效的 Dock 位置。");
         if (!InRange(IconSize, MinIconSize, MaxIconSize))
             throw new ArgumentException($"图标尺寸须在 {MinIconSize} 到 {MaxIconSize} DIP 之间。");
+        if (!Enum.IsDefined(IconNameDisplay))
+            throw new ArgumentException("请选择有效的图标名称显示方式。");
         if (!InRange(DockThickness, MinThickness, MaxThickness) || DockThickness < IconSize + IconClearance)
             throw new ArgumentException($"Dock 厚度须在 {MinThickness} 到 {MaxThickness} DIP 之间，且至少比图标大 {IconClearance} DIP。");
         if (DockLength != 0 && !InRange(DockLength, MinLength, MaxLength))

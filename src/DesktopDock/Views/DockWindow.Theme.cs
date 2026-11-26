@@ -80,7 +80,7 @@ public partial class DockWindow
             {
                 ApplyEntryTooltip(button);
                 if ((!animationsEnabled || performanceMode || previous?.Hover != tokens.Hover) &&
-                    button.Content is Image { RenderTransform: TransformGroup transform })
+                    EntryImage(button) is { RenderTransform: TransformGroup transform })
                     ClearHoverAnimation((ScaleTransform)transform.Children[0], (TranslateTransform)transform.Children[1]);
             }
         }
